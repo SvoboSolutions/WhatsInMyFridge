@@ -1,0 +1,12 @@
+CREATE TABLE PantryIngredient (
+    name TEXT NOT NULL PRIMARY KEY
+);
+
+selectAll:
+SELECT * FROM PantryIngredient;
+
+insertIngredient:
+INSERT OR IGNORE INTO PantryIngredient(name) VALUES (?);
+
+deleteIngredient:
+DELETE FROM PantryIngredient WHERE name = ?;

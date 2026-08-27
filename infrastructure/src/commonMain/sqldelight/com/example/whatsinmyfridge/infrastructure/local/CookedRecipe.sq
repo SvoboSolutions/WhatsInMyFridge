@@ -1,0 +1,14 @@
+CREATE TABLE CookedRecipeEntity (
+    recipeId INTEGER NOT NULL,
+    recipeTitle TEXT NOT NULL,
+    usedIngredientCount INTEGER NOT NULL,
+    missedIngredientCount INTEGER NOT NULL,
+    cookedAtEpochMillis INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM CookedRecipeEntity ORDER BY cookedAtEpochMillis DESC;
+
+insertEntry:
+INSERT INTO CookedRecipeEntity(recipeId, recipeTitle, usedIngredientCount, missedIngredientCount, cookedAtEpochMillis)
+VALUES (?, ?, ?, ?, ?);

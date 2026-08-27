@@ -1,0 +1,14 @@
+CREATE TABLE UserProfileEntity (
+    uid TEXT NOT NULL PRIMARY KEY,
+    displayName TEXT NOT NULL,
+    dietType TEXT NOT NULL,
+    allergies TEXT NOT NULL,
+    onboardingCompleted INTEGER NOT NULL
+);
+
+selectFirst:
+SELECT * FROM UserProfileEntity LIMIT 1;
+
+insertOrReplace:
+INSERT OR REPLACE INTO UserProfileEntity(uid, displayName, dietType, allergies, onboardingCompleted)
+VALUES (?, ?, ?, ?, ?);

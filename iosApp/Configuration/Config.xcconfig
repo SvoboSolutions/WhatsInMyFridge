@@ -1,0 +1,9 @@
+#include "Secrets.xcconfig"
+
+TEAM_ID=
+
+PRODUCT_NAME=WhatsInMyFridge
+PRODUCT_BUNDLE_IDENTIFIER=com.example.whatsinmyfridge
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0

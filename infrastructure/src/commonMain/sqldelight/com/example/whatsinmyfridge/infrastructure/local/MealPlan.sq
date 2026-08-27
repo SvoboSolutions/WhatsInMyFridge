@@ -1,0 +1,16 @@
+CREATE TABLE MealPlanEntryEntity (
+    date TEXT NOT NULL PRIMARY KEY,
+    recipeId INTEGER NOT NULL,
+    recipeTitle TEXT NOT NULL,
+    recipeImageUrl TEXT
+);
+
+selectAll:
+SELECT * FROM MealPlanEntryEntity;
+
+insertOrReplace:
+INSERT OR REPLACE INTO MealPlanEntryEntity(date, recipeId, recipeTitle, recipeImageUrl)
+VALUES (?, ?, ?, ?);
+
+deleteByDate:
+DELETE FROM MealPlanEntryEntity WHERE date = ?;

@@ -1,0 +1,20 @@
+CREATE TABLE SavedRecipeEntity (
+    id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    imageUrl TEXT,
+    usedIngredients TEXT NOT NULL,
+    missedIngredients TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM SavedRecipeEntity;
+
+selectAllIds:
+SELECT id FROM SavedRecipeEntity;
+
+insertOrReplace:
+INSERT OR REPLACE INTO SavedRecipeEntity(id, title, imageUrl, usedIngredients, missedIngredients)
+VALUES (?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM SavedRecipeEntity WHERE id = ?;

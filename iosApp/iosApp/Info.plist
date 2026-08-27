@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>SpoonacularAPIKey</key>
+	<string>$(SPOONACULAR_API_KEY)</string>
+	<key>AnthropicAPIKey</key>
+	<string>$(ANTHROPIC_API_KEY)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Wird verwendet, um Zutaten aus einem Foto deines Kühlschranks zu erkennen.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Wird verwendet, um ein Foto aus deiner Fotomediathek für die Zutatenerkennung auszuwählen.</string>
+	<key>GIDServerClientID</key>
+	<string>84465714289-kn0ep6lcogckd90q3g5n2kdfn98qfho8.apps.googleusercontent.com</string>
+	<key>GIDClientID</key>
+	<string>84465714289-03srfqolvaspjo5o02qj6d781j73b53v.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.84465714289-03srfqolvaspjo5o02qj6d781j73b53v</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

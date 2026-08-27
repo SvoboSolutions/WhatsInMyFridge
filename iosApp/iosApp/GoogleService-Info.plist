@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>API_KEY</key>
+    <string>AIzaSyBn8PDoMYMlK1CbzvYkW2hZbrKX-9zNLaQ</string>
+    <key>GCM_SENDER_ID</key>
+    <string>84465714289</string>
+    <key>PLIST_VERSION</key>
+    <string>1</string>
+    <key>BUNDLE_ID</key>
+    <string>com.example.whatsinmyfridge</string>
+    <key>PROJECT_ID</key>
+    <string>whatsinmyfridge-6a686</string>
+    <key>STORAGE_BUCKET</key>
+    <string>whatsinmyfridge-6a686.firebasestorage.app</string>
+    <key>IS_ADS_ENABLED</key>
+    <false></false>
+    <key>IS_ANALYTICS_ENABLED</key>
+    <false></false>
+    <key>IS_APPINVITE_ENABLED</key>
+    <true></true>
+    <key>IS_GCM_ENABLED</key>
+    <true></true>
+    <key>IS_SIGNIN_ENABLED</key>
+    <true></true>
+    <key>GOOGLE_APP_ID</key>
+    <string>1:84465714289:ios:b81b42ce88a3798ff707d0</string>
+</dict>
+</plist>
