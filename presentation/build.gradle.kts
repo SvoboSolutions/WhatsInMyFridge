@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.kmpauth.google)
+            implementation(libs.kmpauth.firebase)
             implementation(libs.kmpauth.uihelper)
 
             implementation(libs.peekaboo.imagePicker)

@@ -46,9 +46,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
+import com.mmk.kmpauth.apple.rememberAppleAuthState
 import com.mmk.kmpauth.core.auth.EmailAuthMode
 import com.mmk.kmpauth.core.auth.rememberEmailAuthState
 import com.mmk.kmpauth.google.rememberGoogleAuthState
+import com.mmk.kmpauth.uihelper.apple.AppleSignInButton
 import com.mmk.kmpauth.uihelper.google.GoogleSignInButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +75,9 @@ fun LoginScreen() {
             result.onFailure { error -> pendingError = error.message ?: "Anmeldung fehlgeschlagen" }
         },
     )
+    val appleAuth = rememberAppleAuthState(onResult = { result ->
+        result.onFailure { error -> pendingError = error.message ?: "Anmeldung fehlgeschlagen" }
+    })
 
     LaunchedEffect(pendingError) {
         pendingError?.let {
@@ -81,7 +86,7 @@ fun LoginScreen() {
         }
     }
 
-    val isBusy = googleAuth.isInProgress || emailAuth.isInProgress
+    val isBusy = googleAuth.isInProgress || emailAuth.isInProgress || appleAuth.isInProgress
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
         Column(
@@ -194,6 +199,16 @@ fun LoginScreen() {
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = FridgePillShape,
                     onClick = { googleAuth.launch() },
+                )
+            }
+
+            if (appleAuth.isInProgress) {
+                CircularProgressIndicator(modifier = Modifier.padding(top = FridgeSpacing.sm))
+            } else {
+                AppleSignInButton(
+                    modifier = Modifier.padding(top = FridgeSpacing.sm).fillMaxWidth().height(52.dp),
+                    shape = FridgePillShape,
+                    onClick = { appleAuth.launch() },
                 )
             }
 
