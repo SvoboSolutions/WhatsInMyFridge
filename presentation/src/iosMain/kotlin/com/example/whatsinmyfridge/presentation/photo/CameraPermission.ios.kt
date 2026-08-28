@@ -9,3 +9,6 @@ import androidx.compose.runtime.Composable
 @Composable
 actual fun rememberCameraPermissionLauncher(onResult: (granted: Boolean) -> Unit): () -> Unit =
     { onResult(true) }
+
+// Vorübergehend deaktiviert, siehe Kommentar an der expect-Deklaration in CameraPermission.kt.
+actual val isCameraCaptureSupported: Boolean = false

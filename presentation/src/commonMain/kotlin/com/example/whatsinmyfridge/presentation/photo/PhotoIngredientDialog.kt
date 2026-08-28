@@ -163,13 +163,15 @@ private fun SourceChoiceContent(onPickCamera: () -> Unit, onPickGallery: () -> U
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = FridgeSpacing.lg),
         )
-        Button(
-            onClick = onPickCamera,
-            shape = FridgePillShape,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) {
-            Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
-            Text("Foto aufnehmen")
+        if (isCameraCaptureSupported) {
+            Button(
+                onClick = onPickCamera,
+                shape = FridgePillShape,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+            ) {
+                Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+                Text("Foto aufnehmen")
+            }
         }
         OutlinedButton(
             onClick = onPickGallery,
