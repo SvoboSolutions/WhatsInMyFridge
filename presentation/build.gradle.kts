@@ -59,7 +59,6 @@ kotlin {
             implementation(libs.kmpauth.uihelper)
 
             implementation(libs.peekaboo.imagePicker)
-            implementation(libs.peekaboo.ui)
 
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.compose)
