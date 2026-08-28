@@ -15,6 +15,9 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            // SQLDelight braucht auf iOS die native SQLite3-Bibliothek - ohne diese
+            // Linker-Flag gibt es "undefined symbol: _sqlite3_*" beim Framework-Build.
+            linkerOpts("-lsqlite3")
         }
     }
 
