@@ -19,11 +19,12 @@ class PhotoIngredientViewModel(
     private val _state = MutableStateFlow(PhotoIngredientState())
     val state: StateFlow<PhotoIngredientState> = _state.asStateFlow()
 
-    private var lastImageBytes: ByteArray? = null
-
     fun onIntent(intent: PhotoIngredientIntent) {
         when (intent) {
             is PhotoIngredientIntent.AnalyzePhoto -> analyzePhoto(intent.imageBytes)
+
+            PhotoIngredientIntent.AddAnotherPhoto ->
+                _state.update { it.copy(step = PhotoIngredientStep.SOURCE_CHOICE, errorMessage = null) }
 
             is PhotoIngredientIntent.RemoveIngredient ->
                 _state.update { it.copy(recognizedIngredients = it.recognizedIngredients - intent.name) }
@@ -33,10 +34,9 @@ class PhotoIngredientViewModel(
 
             PhotoIngredientIntent.AddManualIngredient -> addManualIngredient()
 
-            PhotoIngredientIntent.Retry -> lastImageBytes?.let { analyzePhoto(it) }
+            PhotoIngredientIntent.Reset -> _state.value = PhotoIngredientState()
 
-            PhotoIngredientIntent.DismissError ->
-                _state.update { it.copy(errorMessage = null) }
+            PhotoIngredientIntent.DismissError -> _state.update { it.copy(errorMessage = null) }
         }
     }
 
@@ -51,24 +51,35 @@ class PhotoIngredientViewModel(
         }
     }
 
+    /**
+     * Ergebnisse mehrerer Fotos innerhalb einer Session werden zusammengeführt statt sich
+     * gegenseitig zu überschreiben - so kann man z.B. erst die Vorratskammer, dann den
+     * Kühlschrank fotografieren und alles zusammen übernehmen. Case-insensitiv dedupliziert.
+     */
     private fun analyzePhoto(imageBytes: ByteArray) {
-        lastImageBytes = imageBytes
         viewModelScope.launch {
             _state.update { it.copy(step = PhotoIngredientStep.LOADING, errorMessage = null) }
 
             recognizeIngredientsFromPhoto(imageBytes)
                 .onSuccess { names ->
-                    _state.update {
-                        it.copy(step = PhotoIngredientStep.PREVIEW, recognizedIngredients = names)
+                    _state.update { current ->
+                        val merged = (current.recognizedIngredients + names)
+                            .map { it.trim().lowercase() }
+                            .filter { it.isNotBlank() }
+                            .distinct()
+                        current.copy(step = PhotoIngredientStep.PREVIEW, recognizedIngredients = merged)
                     }
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Zutatenerkennung fehlgeschlagen", error)
-                    _state.update {
-                        it.copy(
-                            step = PhotoIngredientStep.SOURCE_CHOICE,
-                            errorMessage = error.message ?: "Erkennung fehlgeschlagen",
-                        )
+                    _state.update { current ->
+                        // Bereits erkannte Zutaten aus vorherigen Fotos dieser Session bleiben erhalten.
+                        val fallbackStep = if (current.recognizedIngredients.isEmpty()) {
+                            PhotoIngredientStep.SOURCE_CHOICE
+                        } else {
+                            PhotoIngredientStep.PREVIEW
+                        }
+                        current.copy(step = fallbackStep, errorMessage = error.message ?: "Erkennung fehlgeschlagen")
                     }
                 }
         }

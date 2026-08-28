@@ -5,6 +5,7 @@ import com.example.whatsinmyfridge.domain.model.Ingredient
 data class PantryState(
     val ingredientInput: String = "",
     val ingredients: List<Ingredient> = emptyList(),
+    val selectedForDeletion: Set<Ingredient> = emptySet(),
     val errorMessage: String? = null,
 )
 
@@ -12,6 +13,11 @@ sealed interface PantryIntent {
     data class UpdateIngredientInput(val value: String) : PantryIntent
     data object AddIngredient : PantryIntent
     data class AddIngredients(val names: List<String>) : PantryIntent
-    data class RemoveIngredient(val ingredient: Ingredient) : PantryIntent
+
+    /** Markiert/entmarkiert eine Zutat zum Löschen (Mehrfachauswahl statt Sofort-Löschen). */
+    data class ToggleSelectForDeletion(val ingredient: Ingredient) : PantryIntent
+    data object ClearSelection : PantryIntent
+    data object DeleteSelected : PantryIntent
+
     data object DismissError : PantryIntent
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Button
@@ -18,6 +19,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +42,7 @@ import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 fun PhotoIngredientPreviewContent(
     state: PhotoIngredientState,
     onIntent: (PhotoIngredientIntent) -> Unit,
+    onAddAnotherPhoto: () -> Unit,
     onConfirm: () -> Unit,
 ) {
     Column(
@@ -98,6 +101,15 @@ fun PhotoIngredientPreviewContent(
             shape = MaterialTheme.shapes.large,
             modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.md),
         )
+
+        OutlinedButton(
+            onClick = onAddAnotherPhoto,
+            shape = FridgePillShape,
+            modifier = Modifier.padding(top = FridgeSpacing.md).fillMaxWidth().height(52.dp),
+        ) {
+            Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+            Text("Weiteres Foto aufnehmen")
+        }
 
         Button(
             onClick = onConfirm,

@@ -17,9 +17,19 @@ data class PhotoIngredientState(
 
 sealed interface PhotoIngredientIntent {
     data class AnalyzePhoto(val imageBytes: ByteArray) : PhotoIngredientIntent
+
+    /** Zurück zur Kamera/Galerie-Auswahl, ohne die bisher erkannten Zutaten zu verwerfen -
+     * für "hat nicht viel gefunden, ich nehme noch ein Foto auf". */
+    data object AddAnotherPhoto : PhotoIngredientIntent
+
     data class RemoveIngredient(val name: String) : PhotoIngredientIntent
     data class UpdateManualInput(val value: String) : PhotoIngredientIntent
     data object AddManualIngredient : PhotoIngredientIntent
-    data object Retry : PhotoIngredientIntent
+
+    /** Kompletter Reset (neue Session) - beim Schließen des Dialogs aufrufen, damit beim
+     * nächsten Öffnen wieder bei der Quellen-Auswahl gestartet wird statt bei der alten
+     * (ggf. stale) Vorschau. */
+    data object Reset : PhotoIngredientIntent
+
     data object DismissError : PhotoIngredientIntent
 }

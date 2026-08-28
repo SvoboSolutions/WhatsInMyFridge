@@ -27,7 +27,13 @@ class PantryViewModel(
     init {
         viewModelScope.launch {
             observePantry().collect { ingredients ->
-                _state.update { it.copy(ingredients = ingredients) }
+                _state.update {
+                    it.copy(
+                        ingredients = ingredients,
+                        // Zutaten, die inzwischen aus der DB verschwunden sind, aus der Auswahl entfernen.
+                        selectedForDeletion = it.selectedForDeletion.intersect(ingredients.toSet()),
+                    )
+                }
             }
         }
     }
@@ -41,14 +47,36 @@ class PantryViewModel(
 
             is PantryIntent.AddIngredients -> addAll(intent.names)
 
-            is PantryIntent.RemoveIngredient -> remove(intent.ingredient)
+            is PantryIntent.ToggleSelectForDeletion -> toggleSelection(intent.ingredient)
+
+            PantryIntent.ClearSelection -> _state.update { it.copy(selectedForDeletion = emptySet()) }
+
+            PantryIntent.DeleteSelected -> deleteSelected()
 
             PantryIntent.DismissError -> _state.update { it.copy(errorMessage = null) }
         }
     }
 
+    private fun toggleSelection(ingredient: Ingredient) {
+        _state.update {
+            val selected = it.selectedForDeletion
+            it.copy(
+                selectedForDeletion = if (ingredient in selected) selected - ingredient else selected + ingredient,
+            )
+        }
+    }
+
+    private fun deleteSelected() {
+        val toDelete = _state.value.selectedForDeletion
+        if (toDelete.isEmpty()) return
+        _state.update { it.copy(selectedForDeletion = emptySet()) }
+        viewModelScope.launch {
+            toDelete.forEach { ingredient -> removePantryIngredient(ingredient) }
+        }
+    }
+
     private fun addFromInput() {
-        val name = _state.value.ingredientInput.trim()
+        val name = _state.value.ingredientInput.trim().lowercase()
         if (name.isEmpty()) return
         _state.update { it.copy(ingredientInput = "") }
         viewModelScope.launch {
@@ -63,14 +91,10 @@ class PantryViewModel(
     private fun addAll(names: List<String>) {
         if (names.isEmpty()) return
         viewModelScope.launch {
-            names.map { it.trim() }.filter { it.isNotEmpty() }.forEach { name ->
+            names.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.distinct().forEach { name ->
                 runCatching { addPantryIngredient(Ingredient(name)) }
                     .onFailure { error -> Logger.e(TAG, "Zutat konnte nicht hinzugefügt werden", error) }
             }
         }
-    }
-
-    private fun remove(ingredient: Ingredient) {
-        viewModelScope.launch { removePantryIngredient(ingredient) }
     }
 }

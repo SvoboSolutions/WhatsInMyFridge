@@ -6,15 +6,21 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +91,29 @@ fun PantryScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
+            if (state.selectedForDeletion.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.sm),
+                    horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                ) {
+                    Button(
+                        onClick = { onIntent(PantryIntent.DeleteSelected) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        ),
+                        shape = FridgePillShape,
+                        modifier = Modifier.height(44.dp),
+                    ) {
+                        Icon(Icons.Filled.DeleteOutline, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+                        Text("${state.selectedForDeletion.size} löschen")
+                    }
+                    IconButton(onClick = { onIntent(PantryIntent.ClearSelection) }) {
+                        Icon(Icons.Filled.Close, contentDescription = "Auswahl aufheben")
+                    }
+                }
+            }
+
             if (state.ingredients.isEmpty()) {
                 EmptyPantryState()
             } else {
@@ -94,14 +123,22 @@ fun PantryScreen(
                     modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs).fillMaxWidth(),
                 ) {
                     state.ingredients.forEach { ingredient ->
+                        val isMarked = ingredient in state.selectedForDeletion
                         FilterChip(
-                            selected = true,
-                            onClick = { onIntent(PantryIntent.RemoveIngredient(ingredient)) },
+                            selected = isMarked,
+                            onClick = { onIntent(PantryIntent.ToggleSelectForDeletion(ingredient)) },
                             label = { Text(ingredient.name) },
                             shape = FridgePillShape,
-                            trailingIcon = {
-                                Icon(Icons.Filled.Close, contentDescription = "Entfernen", modifier = Modifier.padding(2.dp))
+                            leadingIcon = if (isMarked) {
+                                { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
+                            } else {
+                                null
                             },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
                         )
                     }
                 }

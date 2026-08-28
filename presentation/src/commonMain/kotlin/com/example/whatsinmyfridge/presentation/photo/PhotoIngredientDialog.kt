@@ -100,6 +100,13 @@ fun PhotoIngredientDialog(
         },
     )
 
+    // Session-Ende (egal ob per X oder nach Übernahme): Zustand zurücksetzen, damit beim
+    // nächsten Öffnen wieder bei der Quellen-Auswahl gestartet wird statt bei alten Daten.
+    val dismissAndReset = {
+        onIntent(PhotoIngredientIntent.Reset)
+        onDismiss()
+    }
+
     // Bewusst kein androidx.compose.ui.window.Dialog: Compose-Animationen (z.B. der Lade-
     // Spinner) frieren in manchen Compose-Versionen in einem separaten Dialog-Fenster ein.
     // Als normales Overlay in derselben Composition läuft alles über denselben Frame-Takt.
@@ -109,7 +116,7 @@ fun PhotoIngredientDialog(
                 TopAppBar(
                     title = { Text("Zutaten per Foto erkennen") },
                     navigationIcon = {
-                        IconButton(onClick = onDismiss) {
+                        IconButton(onClick = dismissAndReset) {
                             Icon(Icons.Filled.Close, contentDescription = "Schließen")
                         }
                     },
@@ -128,9 +135,10 @@ fun PhotoIngredientDialog(
                         PhotoIngredientPreviewContent(
                             state = state,
                             onIntent = onIntent,
+                            onAddAnotherPhoto = { onIntent(PhotoIngredientIntent.AddAnotherPhoto) },
                             onConfirm = {
                                 onConfirm(state.recognizedIngredients)
-                                onDismiss()
+                                dismissAndReset()
                             },
                         )
                 }
