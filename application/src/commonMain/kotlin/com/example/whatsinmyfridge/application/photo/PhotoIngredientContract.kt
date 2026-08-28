@@ -2,7 +2,6 @@ package com.example.whatsinmyfridge.application.photo
 
 enum class PhotoIngredientStep {
     SOURCE_CHOICE,
-    CAMERA,
     LOADING,
     PREVIEW,
 }
@@ -17,8 +16,6 @@ data class PhotoIngredientState(
 }
 
 sealed interface PhotoIngredientIntent {
-    data object ShowCamera : PhotoIngredientIntent
-    data object ShowSourceChoice : PhotoIngredientIntent
     data class AnalyzePhoto(val imageBytes: ByteArray) : PhotoIngredientIntent
     data class RemoveIngredient(val name: String) : PhotoIngredientIntent
     data class UpdateManualInput(val value: String) : PhotoIngredientIntent

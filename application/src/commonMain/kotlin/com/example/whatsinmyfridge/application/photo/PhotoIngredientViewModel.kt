@@ -23,12 +23,6 @@ class PhotoIngredientViewModel(
 
     fun onIntent(intent: PhotoIngredientIntent) {
         when (intent) {
-            PhotoIngredientIntent.ShowCamera ->
-                _state.update { it.copy(step = PhotoIngredientStep.CAMERA, errorMessage = null) }
-
-            PhotoIngredientIntent.ShowSourceChoice ->
-                _state.update { it.copy(step = PhotoIngredientStep.SOURCE_CHOICE, errorMessage = null) }
-
             is PhotoIngredientIntent.AnalyzePhoto -> analyzePhoto(intent.imageBytes)
 
             is PhotoIngredientIntent.RemoveIngredient ->

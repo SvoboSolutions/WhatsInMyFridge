@@ -43,9 +43,6 @@ import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.preat.peekaboo.image.picker.ResizeOptions
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
-import com.preat.peekaboo.ui.camera.CameraMode
-import com.preat.peekaboo.ui.camera.PeekabooCamera
-import com.preat.peekaboo.ui.camera.rememberPeekabooCameraState
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -80,9 +77,13 @@ fun PhotoIngredientDialog(
 
     val scope = rememberCoroutineScope()
 
+    val captureFromCamera = rememberCameraCaptureLauncher(onResult = { imageBytes ->
+        imageBytes?.let { onIntent(PhotoIngredientIntent.AnalyzePhoto(it)) }
+    })
+
     val requestCameraPermission = rememberCameraPermissionLauncher(onResult = { granted ->
         if (granted) {
-            onIntent(PhotoIngredientIntent.ShowCamera)
+            captureFromCamera()
         } else {
             scope.launch {
                 snackbarHostState.showSnackbar("Kamera-Berechtigung verweigert. Du kannst stattdessen ein Foto aus der Galerie wählen.")
@@ -121,12 +122,6 @@ fun PhotoIngredientDialog(
                     PhotoIngredientStep.SOURCE_CHOICE ->
                         SourceChoiceContent(onPickCamera = requestCameraPermission, onPickGallery = galleryPicker::launch)
 
-                    PhotoIngredientStep.CAMERA ->
-                        CameraCaptureContent(
-                            onCapture = { onIntent(PhotoIngredientIntent.AnalyzePhoto(it)) },
-                            onCancel = { onIntent(PhotoIngredientIntent.ShowSourceChoice) },
-                        )
-
                     PhotoIngredientStep.LOADING -> LoadingContent()
 
                     PhotoIngredientStep.PREVIEW ->
@@ -163,15 +158,13 @@ private fun SourceChoiceContent(onPickCamera: () -> Unit, onPickGallery: () -> U
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = FridgeSpacing.lg),
         )
-        if (isCameraCaptureSupported) {
-            Button(
-                onClick = onPickCamera,
-                shape = FridgePillShape,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-            ) {
-                Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
-                Text("Foto aufnehmen")
-            }
+        Button(
+            onClick = onPickCamera,
+            shape = FridgePillShape,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+        ) {
+            Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+            Text("Foto aufnehmen")
         }
         OutlinedButton(
             onClick = onPickGallery,
@@ -180,45 +173,6 @@ private fun SourceChoiceContent(onPickCamera: () -> Unit, onPickGallery: () -> U
         ) {
             Icon(Icons.Filled.Photo, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
             Text("Aus Galerie wählen")
-        }
-    }
-}
-
-@Composable
-private fun CameraCaptureContent(onCapture: (ByteArray) -> Unit, onCancel: () -> Unit) {
-    val cameraState = rememberPeekabooCameraState(
-        initialCameraMode = CameraMode.Back,
-        onCapture = { imageBytes -> imageBytes?.let(onCapture) },
-    )
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        PeekabooCamera(
-            state = cameraState,
-            modifier = Modifier.fillMaxSize(),
-            permissionDeniedContent = {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(FridgeSpacing.lg),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        "Kamera-Berechtigung wird benötigt, um Fotos aufzunehmen.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = FridgeSpacing.md),
-                    )
-                    OutlinedButton(onClick = onCancel, shape = FridgePillShape) {
-                        Text("Zurück")
-                    }
-                }
-            },
-        )
-        Button(
-            onClick = cameraState::capture,
-            enabled = cameraState.isCameraReady && !cameraState.isCapturing,
-            shape = FridgePillShape,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(FridgeSpacing.lg),
-        ) {
-            Text("Auslösen")
         }
     }
 }

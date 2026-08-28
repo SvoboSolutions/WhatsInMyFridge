@@ -12,5 +12,3 @@ actual fun rememberCameraPermissionLauncher(onResult: (granted: Boolean) -> Unit
     }
     return { launcher.launch(Manifest.permission.CAMERA) }
 }
-
-actual val isCameraCaptureSupported: Boolean = true

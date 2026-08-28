@@ -9,5 +9,3 @@ import androidx.compose.runtime.Composable
 @Composable
 actual fun rememberCameraPermissionLauncher(onResult: (granted: Boolean) -> Unit): () -> Unit =
     { onResult(true) }
-
-actual val isCameraCaptureSupported: Boolean = true
