@@ -1,6 +1,7 @@
 package com.example.whatsinmyfridge.presentation.pantry
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -9,12 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,15 +39,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.whatsinmyfridge.application.pantry.MAX_PANTRY_SIZE
 import com.example.whatsinmyfridge.application.pantry.PantryIntent
 import com.example.whatsinmyfridge.application.pantry.PantryState
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
+import com.example.whatsinmyfridge.domain.model.IngredientCategory
+import com.example.whatsinmyfridge.domain.model.categorizeIngredient
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Zeigt alles, was dauerhaft in
  * Kühlschrank/Vorratskammer liegt - im Unterschied zur flüchtigen Zutatenliste bei der Suche.
+ * Der gesamte Inhalt ist scrollbar, damit auch bei vielen Vorräten alles erreichbar bleibt.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +74,13 @@ fun PantryScreen(
         topBar = { TopAppBar(title = { Text("Vorratskammer") }) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = FridgeSpacing.md)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = FridgeSpacing.md),
+        ) {
             Text(
                 "Was hast du dauerhaft zuhause?",
                 style = MaterialTheme.typography.titleMedium,
@@ -75,13 +90,14 @@ fun PantryScreen(
             OutlinedTextField(
                 value = state.ingredientInput,
                 onValueChange = { onIntent(PantryIntent.UpdateIngredientInput(it)) },
-                label = { Text("z.B. Reis") },
+                label = { Text(if (state.isFull) "Vorratskammer ist voll ($MAX_PANTRY_SIZE)" else "z.B. Reis") },
+                enabled = !state.isFull,
                 trailingIcon = {
                     Row {
-                        IconButton(onClick = onOpenPhotoRecognition) {
+                        IconButton(onClick = onOpenPhotoRecognition, enabled = !state.isFull) {
                             Icon(Icons.Filled.CameraAlt, contentDescription = "Per Foto erkennen")
                         }
-                        IconButton(onClick = { onIntent(PantryIntent.AddIngredient) }) {
+                        IconButton(onClick = { onIntent(PantryIntent.AddIngredient) }, enabled = !state.isFull) {
                             Icon(Icons.Filled.Add, contentDescription = "Hinzufügen")
                         }
                     }
@@ -91,25 +107,39 @@ fun PantryScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            if (state.selectedForDeletion.isNotEmpty()) {
+            if (state.ingredients.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.sm),
                     horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Button(
-                        onClick = { onIntent(PantryIntent.DeleteSelected) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                        ),
-                        shape = FridgePillShape,
-                        modifier = Modifier.height(44.dp),
-                    ) {
-                        Icon(Icons.Filled.DeleteOutline, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
-                        Text("${state.selectedForDeletion.size} löschen")
-                    }
-                    IconButton(onClick = { onIntent(PantryIntent.ClearSelection) }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Auswahl aufheben")
+                    Text(
+                        "${state.ingredients.size} von $MAX_PANTRY_SIZE",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    if (state.selectedForDeletion.isNotEmpty()) {
+                        Button(
+                            onClick = { onIntent(PantryIntent.DeleteSelected) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ),
+                            shape = FridgePillShape,
+                            modifier = Modifier.height(40.dp),
+                        ) {
+                            Icon(Icons.Filled.DeleteOutline, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+                            Text("${state.selectedForDeletion.size} löschen")
+                        }
+                        IconButton(onClick = { onIntent(PantryIntent.ClearSelection) }) {
+                            Icon(Icons.Filled.Close, contentDescription = "Auswahl aufheben")
+                        }
+                    } else {
+                        IconButton(onClick = { onIntent(PantryIntent.SelectAll) }) {
+                            Icon(Icons.Filled.DoneAll, contentDescription = "Alle auswählen")
+                        }
                     }
                 }
             }
@@ -117,31 +147,46 @@ fun PantryScreen(
             if (state.ingredients.isEmpty()) {
                 EmptyPantryState()
             } else {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-                    verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-                    modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs).fillMaxWidth(),
-                ) {
-                    state.ingredients.forEach { ingredient ->
-                        val isMarked = ingredient in state.selectedForDeletion
-                        FilterChip(
-                            selected = isMarked,
-                            onClick = { onIntent(PantryIntent.ToggleSelectForDeletion(ingredient)) },
-                            label = { Text(ingredient.name) },
-                            shape = FridgePillShape,
-                            leadingIcon = if (isMarked) {
-                                { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
-                            } else {
-                                null
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
-                                selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
-                            ),
-                        )
+                val grouped = state.ingredients
+                    .groupBy { categorizeIngredient(it.name) }
+
+                IngredientCategory.entries.forEach { category ->
+                    val items = grouped[category] ?: return@forEach
+                    Text(
+                        category.displayName,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = FridgeSpacing.md, bottom = FridgeSpacing.xs),
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                        verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        items.forEach { ingredient ->
+                            val isMarked = ingredient in state.selectedForDeletion
+                            FilterChip(
+                                selected = isMarked,
+                                onClick = { onIntent(PantryIntent.ToggleSelectForDeletion(ingredient)) },
+                                label = { Text(ingredient.name) },
+                                shape = FridgePillShape,
+                                leadingIcon = if (isMarked) {
+                                    { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
+                                } else {
+                                    null
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                                    selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                                ),
+                            )
+                        }
                     }
                 }
+
+                Box(modifier = Modifier.height(FridgeSpacing.lg))
             }
         }
     }

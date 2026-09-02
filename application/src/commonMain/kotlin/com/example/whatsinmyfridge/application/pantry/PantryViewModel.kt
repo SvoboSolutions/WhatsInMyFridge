@@ -49,6 +49,9 @@ class PantryViewModel(
 
             is PantryIntent.ToggleSelectForDeletion -> toggleSelection(intent.ingredient)
 
+            PantryIntent.SelectAll ->
+                _state.update { it.copy(selectedForDeletion = it.ingredients.toSet()) }
+
             PantryIntent.ClearSelection -> _state.update { it.copy(selectedForDeletion = emptySet()) }
 
             PantryIntent.DeleteSelected -> deleteSelected()
@@ -78,6 +81,12 @@ class PantryViewModel(
     private fun addFromInput() {
         val name = _state.value.ingredientInput.trim().lowercase()
         if (name.isEmpty()) return
+        if (_state.value.isFull) {
+            _state.update {
+                it.copy(errorMessage = "Maximal $MAX_PANTRY_SIZE Vorräte - bitte erst etwas löschen")
+            }
+            return
+        }
         _state.update { it.copy(ingredientInput = "") }
         viewModelScope.launch {
             runCatching { addPantryIngredient(Ingredient(name)) }
@@ -91,9 +100,26 @@ class PantryViewModel(
     private fun addAll(names: List<String>) {
         if (names.isEmpty()) return
         viewModelScope.launch {
+            val existingNames = _state.value.ingredients.map { it.name }.toMutableSet()
+            var remainingSlots = MAX_PANTRY_SIZE - existingNames.size
+            var skippedDueToLimit = false
+
             names.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.distinct().forEach { name ->
+                if (name in existingNames) return@forEach
+                if (remainingSlots <= 0) {
+                    skippedDueToLimit = true
+                    return@forEach
+                }
+                remainingSlots--
+                existingNames += name
                 runCatching { addPantryIngredient(Ingredient(name)) }
                     .onFailure { error -> Logger.e(TAG, "Zutat konnte nicht hinzugefügt werden", error) }
+            }
+
+            if (skippedDueToLimit) {
+                _state.update {
+                    it.copy(errorMessage = "Maximal $MAX_PANTRY_SIZE Vorräte - einige wurden nicht hinzugefügt")
+                }
             }
         }
     }

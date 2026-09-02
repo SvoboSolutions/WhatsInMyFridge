@@ -111,7 +111,11 @@ fun FridgeNavHost(navController: NavHostController = rememberNavController()) {
                 PantryRoute()
             }
             composable<FridgeDestination.MealPlan> {
-                MealPlanRoute()
+                MealPlanRoute(
+                    onRecipeClick = { entry ->
+                        navController.navigate(FridgeDestination.RecipeDetail(recipeId = entry.recipeId))
+                    },
+                )
             }
             composable<FridgeDestination.SavedRecipes> {
                 SavedRecipesRoute(

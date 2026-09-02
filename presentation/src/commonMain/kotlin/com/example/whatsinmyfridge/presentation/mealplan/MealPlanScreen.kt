@@ -33,6 +33,7 @@ import com.example.whatsinmyfridge.application.mealplan.MealPlanIntent
 import com.example.whatsinmyfridge.application.mealplan.MealPlanState
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
+import com.example.whatsinmyfridge.domain.model.MealPlanEntry
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Tage antippen um sie ein-/auszuschließen,
@@ -43,6 +44,7 @@ import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 fun MealPlanScreen(
     state: MealPlanState,
     onIntent: (MealPlanIntent) -> Unit,
+    onRecipeClick: (MealPlanEntry) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -104,6 +106,7 @@ fun MealPlanScreen(
                         entry = state.entries[date],
                         onPickRecipe = { onIntent(MealPlanIntent.OpenRecipePicker(date)) },
                         onRemoveEntry = { onIntent(MealPlanIntent.RemoveEntry(date)) },
+                        onOpenDetails = { state.entries[date]?.let(onRecipeClick) },
                     )
                 }
             }

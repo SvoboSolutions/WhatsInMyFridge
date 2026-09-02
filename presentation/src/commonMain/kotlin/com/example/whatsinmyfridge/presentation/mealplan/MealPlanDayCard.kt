@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.mealplan
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,6 +42,7 @@ fun MealPlanDayCard(
     entry: MealPlanEntry?,
     onPickRecipe: () -> Unit,
     onRemoveEntry: () -> Unit,
+    onOpenDetails: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
@@ -62,29 +64,34 @@ fun MealPlanDayCard(
             }
 
             if (entry != null) {
-                if (entry.recipeImageUrl != null) {
-                    AsyncImage(
-                        model = entry.recipeImageUrl,
-                        contentDescription = entry.recipeTitle,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(52.dp).clip(MaterialTheme.shapes.medium),
-                    )
-                } else {
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.size(52.dp),
-                    ) {
-                        Icon(Icons.Filled.RestaurantMenu, contentDescription = null, modifier = Modifier.padding(FridgeSpacing.sm))
+                Row(
+                    modifier = Modifier.weight(1f).clickable(onClick = onOpenDetails),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (entry.recipeImageUrl != null) {
+                        AsyncImage(
+                            model = entry.recipeImageUrl,
+                            contentDescription = entry.recipeTitle,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(52.dp).clip(MaterialTheme.shapes.medium),
+                        )
+                    } else {
+                        Surface(
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(52.dp),
+                        ) {
+                            Icon(Icons.Filled.RestaurantMenu, contentDescription = null, modifier = Modifier.padding(FridgeSpacing.sm))
+                        }
                     }
-                }
 
-                Text(
-                    entry.recipeTitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.weight(1f).padding(horizontal = FridgeSpacing.sm),
-                )
+                    Text(
+                        entry.recipeTitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = FridgeSpacing.sm),
+                    )
+                }
 
                 IconButton(onClick = onPickRecipe) {
                     Icon(Icons.Filled.SwapHoriz, contentDescription = "Rezept ändern")
