@@ -8,6 +8,7 @@ data class RecipeSearchState(
     val ingredients: List<Ingredient> = emptyList(),
     val isLoading: Boolean = false,
     val recipes: List<Recipe> = emptyList(),
+    val hasSearched: Boolean = false,
     val savedRecipeIds: Set<Long> = emptySet(),
     val errorMessage: String? = null,
 ) {

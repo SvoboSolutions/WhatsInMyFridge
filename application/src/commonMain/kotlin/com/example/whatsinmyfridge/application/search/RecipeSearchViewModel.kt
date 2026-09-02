@@ -88,12 +88,16 @@ class RecipeSearchViewModel(
 
             searchRecipesByIngredients(ingredients)
                 .onSuccess { recipes ->
-                    _state.update { it.copy(isLoading = false, recipes = recipes) }
+                    _state.update { it.copy(isLoading = false, recipes = recipes, hasSearched = true) }
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Rezeptsuche fehlgeschlagen", error)
                     _state.update {
-                        it.copy(isLoading = false, errorMessage = error.message ?: "Unbekannter Fehler")
+                        it.copy(
+                            isLoading = false,
+                            hasSearched = true,
+                            errorMessage = error.message ?: "Unbekannter Fehler",
+                        )
                     }
                 }
         }

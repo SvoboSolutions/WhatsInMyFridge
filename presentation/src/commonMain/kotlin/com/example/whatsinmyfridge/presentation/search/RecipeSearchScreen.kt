@@ -168,7 +168,7 @@ private fun LazyListScope.searchResults(
             }
         }
 
-        state.recipes.isEmpty() -> item { EmptySearchState() }
+        state.recipes.isEmpty() -> item { EmptySearchState(hasSearched = state.hasSearched) }
 
         else -> items(state.recipes, key = { it.id }) { recipe ->
             RecipeCard(
@@ -183,7 +183,7 @@ private fun LazyListScope.searchResults(
 }
 
 @Composable
-private fun EmptySearchState() {
+private fun EmptySearchState(hasSearched: Boolean) {
     Column(
         modifier = Modifier.fillMaxSize().padding(top = FridgeSpacing.xxl),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -194,15 +194,28 @@ private fun EmptySearchState() {
             tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.size(56.dp).padding(bottom = FridgeSpacing.sm + FridgeSpacing.xs),
         )
-        Text(
-            "Noch keine Rezepte",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            "Füge Zutaten hinzu und starte die Suche",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline,
-        )
+        if (hasSearched) {
+            Text(
+                "Keine Treffer für diese Zutaten",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "Versuch es mit mehr Zutaten oder prüfe deine Diät-/Allergie-Filter im Profil",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        } else {
+            Text(
+                "Noch keine Rezepte",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "Füge Zutaten hinzu und starte die Suche",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        }
     }
 }

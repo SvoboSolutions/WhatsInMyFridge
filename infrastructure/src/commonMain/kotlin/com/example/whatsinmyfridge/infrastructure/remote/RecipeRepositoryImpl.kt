@@ -21,13 +21,23 @@ class RecipeRepositoryImpl(
         maxMissingIngredients: Int,
         limit: Int,
     ): Result<List<Recipe>> = runCatching {
+        val hasDietFilter = dietType != DietType.OMNIVORE || allergies.isNotEmpty()
+
+        // Die von findByIngredients zurückgegebenen Kandidaten sind nach Zutaten-Treffern
+        // sortiert, nicht nach Diät-Eignung. Wird danach noch nach Diät/Allergien gefiltert,
+        // reicht ein knapper "limit"-Pool oft nicht aus - im schlimmsten Fall fällt der
+        // gesamte Pool raus und es bleiben 0 Treffer übrig, obwohl passende Rezepte existieren.
+        // Deshalb bei aktivem Diät-/Allergie-Filter einen deutlich größeren Pool anfragen
+        // (Spoonacular erlaubt bis zu 100 pro Anfrage) und erst danach auf "limit" kürzen.
+        val fetchCount = if (hasDietFilter) minOf(limit * 5, 100) else limit
+
         val candidates = api.findByIngredients(
             ingredientNames = ingredients.map { it.name },
-            limit = limit,
+            limit = fetchCount,
         ).map { it.toDomain() }.filter { it.missedIngredients.size <= maxMissingIngredients }
 
-        if (dietType == DietType.OMNIVORE && allergies.isEmpty()) {
-            return@runCatching candidates
+        if (!hasDietFilter) {
+            return@runCatching candidates.take(limit)
         }
 
         val infoById = api.getRecipeInformationBulk(candidates.map { it.id }).associateBy { it.id }
@@ -35,7 +45,7 @@ class RecipeRepositoryImpl(
             // Fail-open: Fehlt die Zusatzinfo, lieber anzeigen statt fälschlich ausblenden.
             val info = infoById[recipe.id] ?: return@filter true
             info.matchesDiet(dietType) && info.matchesAllergies(allergies)
-        }
+        }.take(limit)
     }.onFailure { Logger.e("RecipeRepository", "findRecipesByIngredients failed", it) }
 
     override suspend fun getRecipeDetails(recipeId: Long): Result<RecipeDetails> = runCatching {
