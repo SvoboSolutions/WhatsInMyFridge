@@ -12,5 +12,5 @@ fun ProfileRoute(
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
-    ProfileScreen(state = state, onSettingsClick = onSettingsClick)
+    ProfileScreen(state = state, onIntent = viewModel::onIntent, onSettingsClick = onSettingsClick)
 }

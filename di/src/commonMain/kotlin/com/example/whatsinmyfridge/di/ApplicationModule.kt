@@ -10,6 +10,7 @@ import com.example.whatsinmyfridge.application.profile.ProfileViewModel
 import com.example.whatsinmyfridge.application.saved.SavedRecipesViewModel
 import com.example.whatsinmyfridge.application.search.RecipeSearchViewModel
 import com.example.whatsinmyfridge.application.settings.SettingsViewModel
+import com.example.whatsinmyfridge.application.theme.ThemeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -24,6 +25,7 @@ val applicationModule = module {
     viewModelOf(::PhotoIngredientViewModel)
     viewModelOf(::PantryViewModel)
     viewModelOf(::MealPlanViewModel)
+    viewModelOf(::ThemeViewModel)
     viewModel { params ->
         RecipeDetailViewModel(
             recipeId = params.get(),

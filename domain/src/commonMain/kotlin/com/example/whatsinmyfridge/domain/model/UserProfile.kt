@@ -6,4 +6,5 @@ data class UserProfile(
     val dietType: DietType = DietType.OMNIVORE,
     val allergies: Set<Allergy> = emptySet(),
     val onboardingCompleted: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )

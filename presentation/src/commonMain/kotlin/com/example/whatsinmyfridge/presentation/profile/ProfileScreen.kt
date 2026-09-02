@@ -9,21 +9,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.whatsinmyfridge.application.profile.ProfileIntent
 import com.example.whatsinmyfridge.application.profile.ProfileState
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
+import com.example.whatsinmyfridge.domain.model.ThemeMode
+import com.example.whatsinmyfridge.presentation.common.ThemeModeSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(state: ProfileState, onSettingsClick: () -> Unit) {
+fun ProfileScreen(state: ProfileState, onIntent: (ProfileIntent) -> Unit, onSettingsClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -49,6 +55,16 @@ fun ProfileScreen(state: ProfileState, onSettingsClick: () -> Unit) {
         ) {
             ProfileHeader(displayName = state.profile?.displayName.orEmpty(), email = state.email)
             ScoreCard(stats = state.stats)
+
+            HorizontalDivider()
+
+            Column(verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm)) {
+                Text("Darstellung", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                ThemeModeSelector(
+                    selected = state.profile?.themeMode ?: ThemeMode.SYSTEM,
+                    onSelect = { onIntent(ProfileIntent.SetThemeMode(it)) },
+                )
+            }
         }
     }
 }

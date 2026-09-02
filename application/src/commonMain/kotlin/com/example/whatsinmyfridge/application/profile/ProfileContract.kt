@@ -1,6 +1,7 @@
 package com.example.whatsinmyfridge.application.profile
 
 import com.example.whatsinmyfridge.domain.model.CookingStats
+import com.example.whatsinmyfridge.domain.model.ThemeMode
 import com.example.whatsinmyfridge.domain.model.UserProfile
 
 data class ProfileState(
@@ -11,5 +12,6 @@ data class ProfileState(
 )
 
 sealed interface ProfileIntent {
+    data class SetThemeMode(val themeMode: ThemeMode) : ProfileIntent
     data object SignOut : ProfileIntent
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.whatsinmyfridge.domain.usecase.ObserveCookingStatsUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveCurrentUserUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveUserProfileUseCase
+import com.example.whatsinmyfridge.domain.usecase.SaveUserProfileUseCase
 import com.example.whatsinmyfridge.domain.usecase.SignOutUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ class ProfileViewModel(
     observeUserProfile: ObserveUserProfileUseCase,
     observeCookingStats: ObserveCookingStatsUseCase,
     observeCurrentUser: ObserveCurrentUserUseCase,
+    private val saveUserProfile: SaveUserProfileUseCase,
     private val signOut: SignOutUseCase,
 ) : ViewModel() {
 
@@ -35,6 +37,12 @@ class ProfileViewModel(
 
     fun onIntent(intent: ProfileIntent) {
         when (intent) {
+            is ProfileIntent.SetThemeMode -> {
+                val current = _state.value.profile ?: return
+                val updated = current.copy(themeMode = intent.themeMode)
+                _state.update { it.copy(profile = updated) }
+                viewModelScope.launch { saveUserProfile(updated) }
+            }
             ProfileIntent.SignOut -> viewModelScope.launch { signOut() }
         }
     }

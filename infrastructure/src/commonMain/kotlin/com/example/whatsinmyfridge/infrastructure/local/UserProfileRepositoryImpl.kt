@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.example.whatsinmyfridge.domain.model.Allergy
 import com.example.whatsinmyfridge.domain.model.DietType
+import com.example.whatsinmyfridge.domain.model.ThemeMode
 import com.example.whatsinmyfridge.domain.model.UserProfile
 import com.example.whatsinmyfridge.domain.repository.UserProfileRepository
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ class UserProfileRepositoryImpl(
                         dietType = DietType.valueOf(it.dietType),
                         allergies = it.allergies.toAllergySet(),
                         onboardingCompleted = it.onboardingCompleted == 1L,
+                        themeMode = ThemeMode.valueOf(it.themeMode),
                     )
                 }
             }
@@ -39,6 +41,7 @@ class UserProfileRepositoryImpl(
             dietType = profile.dietType.name,
             allergies = profile.allergies.joinToString(ALLERGY_SEPARATOR) { it.name },
             onboardingCompleted = if (profile.onboardingCompleted) 1L else 0L,
+            themeMode = profile.themeMode.name,
         )
     }
 }
