@@ -1,6 +1,7 @@
 package com.example.whatsinmyfridge.presentation.common
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,23 +9,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,8 +34,9 @@ import com.example.whatsinmyfridge.core.theme.themeSwatch
 import com.example.whatsinmyfridge.domain.model.ThemeMode
 
 /**
- * Zeigt jedes Theme als kleine Farbvorschau-Kachel statt als reinen Text/Icon-Button -
- * man sieht direkt, wie das Theme aussehen wird, bevor man es antippt.
+ * Zeigt jedes Theme als Mini-Mockup (Titelbalken, Karte, Akzent-Punkt in den echten
+ * Farben) statt als reinen Text/Icon-Button - fühlt sich an wie ein kleiner
+ * Screenshot des Themes statt wie drei abstrakte Farbpunkte.
  */
 @Composable
 fun ThemeModeSelector(
@@ -47,9 +47,9 @@ fun ThemeModeSelector(
     val isSystemDark = isSystemInDarkTheme()
     val rows = ThemeMode.entries.chunked(2)
 
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm)) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(FridgeSpacing.md)) {
         rows.forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm), modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.md), modifier = Modifier.fillMaxWidth()) {
                 row.forEach { mode ->
                     ThemeSwatchTile(
                         mode = mode,
@@ -59,10 +59,15 @@ fun ThemeModeSelector(
                         modifier = Modifier.weight(1f),
                     )
                 }
+                if (row.size == 1) {
+                    Box(Modifier.weight(1f))
+                }
             }
         }
     }
 }
+
+private val PreviewShape = RoundedCornerShape(14.dp)
 
 @Composable
 private fun ThemeSwatchTile(
@@ -72,66 +77,75 @@ private fun ThemeSwatchTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier
-            .aspectRatio(1.35f)
-            .selectable(selected = isSelected, onClick = onClick, role = Role.RadioButton),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = swatch.background),
-        border = BorderStroke(
-            width = if (isSelected) 2.5.dp else 1.dp,
-            color = if (isSelected) swatch.primary else MaterialTheme.colorScheme.outlineVariant,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 3.dp else 0.dp),
+    Column(
+        modifier = modifier.selectable(selected = isSelected, onClick = onClick, role = Role.RadioButton),
+        verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
     ) {
-        Box(Modifier.fillMaxWidth().padding(FridgeSpacing.sm)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1.45f)
+                .clip(PreviewShape)
+                .background(swatch.background)
+                .border(
+                    width = if (isSelected) 2.5.dp else 1.dp,
+                    color = if (isSelected) swatch.primary else swatch.tertiary.copy(alpha = 0.25f),
+                    shape = PreviewShape,
+                ),
+        ) {
+            // Titelbalken-Akzent
+            Box(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(FridgeSpacing.sm)
+                    .size(width = 30.dp, height = 8.dp)
+                    .clip(FridgePillShape)
+                    .background(swatch.primary),
+            )
+            // Karten-Andeutung
+            Box(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(FridgeSpacing.sm)
+                    .fillMaxWidth(0.55f)
+                    .height(22.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(swatch.secondary),
+            )
+            // Akzent-Punkt (z.B. FAB)
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(FridgeSpacing.sm)
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(swatch.tertiary),
+            )
             if (isSelected) {
-                Surface(
-                    shape = CircleShape,
-                    color = swatch.primary,
-                    modifier = Modifier.align(Alignment.TopEnd).size(20.dp),
+                Box(
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .background(swatch.primary),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Filled.Check,
-                            contentDescription = null,
-                            tint = swatch.background,
-                            modifier = Modifier.size(13.dp),
-                        )
-                    }
+                    Icon(
+                        Icons.Filled.Check,
+                        contentDescription = null,
+                        tint = swatch.background,
+                        modifier = Modifier.size(13.dp),
+                    )
                 }
-            }
-
-            Column(Modifier.align(Alignment.BottomStart)) {
-                Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
-                    ColorDot(swatch.primary)
-                    ColorDot(swatch.secondary)
-                    ColorDot(swatch.tertiary)
-                }
-                Text(
-                    mode.label(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = contentColorFor(swatch.background),
-                    modifier = Modifier.padding(top = FridgeSpacing.xs),
-                )
             }
         }
+
+        Text(
+            mode.label(),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
-}
-
-@Composable
-private fun ColorDot(color: Color, modifier: Modifier = Modifier) {
-    Surface(
-        shape = FridgePillShape,
-        color = color,
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.surface),
-        modifier = modifier.size(22.dp).clip(FridgePillShape),
-    ) {}
-}
-
-/** Grobe Luminanz-Schätzung, damit das Label auf jedem Untergrund lesbar bleibt. */
-private fun contentColorFor(background: Color): Color {
-    val luminance = 0.299f * background.red + 0.587f * background.green + 0.114f * background.blue
-    return if (luminance > 0.6f) Color(0xFF1A1108) else Color(0xFFFFF6EC)
 }

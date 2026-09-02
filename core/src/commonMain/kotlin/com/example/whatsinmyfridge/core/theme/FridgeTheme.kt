@@ -34,6 +34,7 @@ private fun resolveFridgeLook(themeMode: ThemeMode, isSystemDark: Boolean): Pair
         ThemeMode.POMEGRANATE -> FridgePomegranateColors to FridgeShapes
         ThemeMode.CITRUS -> FridgeCitrusColors to FridgePlayfulShapes
         ThemeMode.MIDNIGHT -> FridgeMidnightColors to FridgeShapes
+        ThemeMode.KONTRAST -> FridgeKontrastColors to FridgeSharpShapes
     }
 
 /** Vorschau-Farben für die Theme-Auswahl - unabhängig vom aktuell aktiven Theme. */
@@ -49,4 +50,5 @@ fun themeSwatch(themeMode: ThemeMode, isSystemDark: Boolean): ThemeSwatch =
         ThemeMode.POMEGRANATE -> FridgePomegranateColors.toSwatch()
         ThemeMode.CITRUS -> FridgeCitrusColors.toSwatch()
         ThemeMode.MIDNIGHT -> FridgeMidnightColors.toSwatch()
+        ThemeMode.KONTRAST -> FridgeKontrastColors.toSwatch()
     }

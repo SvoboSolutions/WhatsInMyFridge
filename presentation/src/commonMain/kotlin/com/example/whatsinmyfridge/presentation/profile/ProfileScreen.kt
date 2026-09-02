@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -63,7 +63,7 @@ fun ProfileScreen(state: ProfileState, onIntent: (ProfileIntent) -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = FridgeSpacing.lg - FridgeSpacing.xs, vertical = FridgeSpacing.md),
+                .padding(horizontal = FridgeSpacing.lg, vertical = FridgeSpacing.md),
             verticalArrangement = Arrangement.spacedBy(FridgeSpacing.lg),
         ) {
             ProfileHeader(displayName = profile.displayName, email = state.email)
@@ -109,6 +109,7 @@ fun ProfileScreen(state: ProfileState, onIntent: (ProfileIntent) -> Unit) {
                 onClick = { onIntent(ProfileIntent.SignOut) },
                 shape = FridgePillShape,
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
                 modifier = Modifier.fillMaxWidth().height(52.dp),
             ) {
                 Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
@@ -128,13 +129,14 @@ private fun ProfileSectionCard(
 ) {
     Card(
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(Modifier.padding(FridgeSpacing.md)) {
+        Column(Modifier.padding(FridgeSpacing.lg)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = CircleShape, color = accentContainer, modifier = Modifier.size(40.dp)) {
+                Surface(shape = MaterialTheme.shapes.small, color = accentContainer, modifier = Modifier.size(40.dp)) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(icon, contentDescription = null, tint = onAccent, modifier = Modifier.size(20.dp))
                     }
@@ -143,7 +145,7 @@ private fun ProfileSectionCard(
                     title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(start = FridgeSpacing.sm),
+                    modifier = Modifier.padding(start = FridgeSpacing.smMd),
                 )
             }
             Box(Modifier.padding(top = FridgeSpacing.md)) { content() }

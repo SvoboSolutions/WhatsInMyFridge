@@ -11,4 +11,5 @@ enum class ThemeMode {
     POMEGRANATE,
     CITRUS,
     MIDNIGHT,
+    KONTRAST,
 }

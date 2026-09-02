@@ -27,10 +27,10 @@ fun ProfileHeader(displayName: String, email: String?, modifier: Modifier = Modi
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
-                modifier = Modifier.size(96.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                modifier = Modifier.size(92.dp),
             ) {}
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(82.dp)) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(80.dp)) {
                 Icon(
                     Icons.Filled.Person,
                     contentDescription = null,

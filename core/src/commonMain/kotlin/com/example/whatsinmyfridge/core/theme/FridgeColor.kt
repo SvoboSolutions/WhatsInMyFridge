@@ -310,6 +310,44 @@ internal val FridgeMidnightColors = darkColorScheme(
     outlineVariant = Color(0xFF4A3038),
 )
 
+/**
+ * "Kontrast" - plakativ statt gedeckt: reinweißer Untergrund, fast schwarzer Text und drei
+ * satte, klar getrennte Akzentfarben (Kobaltblau, Magenta, Gold). Neutrale Grau-Rampen statt
+ * der warm getönten Container-Stufen der übrigen Themes, damit er sich bewusst als der
+ * kontrastreichste, grafischste Modus im Set abhebt.
+ */
+internal val FridgeKontrastColors = lightColorScheme(
+    primary = Color(0xFF0047FF),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFD9E1FF),
+    onPrimaryContainer = Color(0xFF00174D),
+    secondary = Color(0xFFE4007C),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFFFD7EA),
+    onSecondaryContainer = Color(0xFF5C0033),
+    tertiary = Color(0xFFC79300),
+    onTertiary = Color(0xFF000000),
+    tertiaryContainer = Color(0xFFFFEBA6),
+    onTertiaryContainer = Color(0xFF241A00),
+    background = Color(0xFFFFFFFF),
+    onBackground = Color(0xFF0A0A0A),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF0A0A0A),
+    surfaceVariant = Color(0xFFE6E6E6),
+    onSurfaceVariant = Color(0xFF2E2E2E),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF5F5F5),
+    surfaceContainer = Color(0xFFEDEDED),
+    surfaceContainerHigh = Color(0xFFE2E2E2),
+    surfaceContainerHighest = Color(0xFFD6D6D6),
+    error = Color(0xFFE30000),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    outline = Color(0xFF4A4A4A),
+    outlineVariant = Color(0xFFC2C2C2),
+)
+
 /** Kleiner, kontextfreier Farbausschnitt eines Themes - für Vorschau-Kacheln in der Theme-Auswahl. */
 data class ThemeSwatch(
     val background: Color,
