@@ -2,6 +2,7 @@ package com.example.whatsinmyfridge.application.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.whatsinmyfridge.domain.model.UserProfile
 import com.example.whatsinmyfridge.domain.usecase.ObserveCookingStatsUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveCurrentUserUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveUserProfileUseCase
@@ -37,13 +38,19 @@ class ProfileViewModel(
 
     fun onIntent(intent: ProfileIntent) {
         when (intent) {
-            is ProfileIntent.SetThemeMode -> {
-                val current = _state.value.profile ?: return
-                val updated = current.copy(themeMode = intent.themeMode)
-                _state.update { it.copy(profile = updated) }
-                viewModelScope.launch { saveUserProfile(updated) }
-            }
+            is ProfileIntent.SelectDiet -> persist { it.copy(dietType = intent.dietType) }
+            is ProfileIntent.ToggleAllergy -> persist { it.copy(allergies = it.allergies.toggle(intent.allergy)) }
+            is ProfileIntent.SetThemeMode -> persist { it.copy(themeMode = intent.themeMode) }
             ProfileIntent.SignOut -> viewModelScope.launch { signOut() }
         }
     }
+
+    private fun persist(reducer: (UserProfile) -> UserProfile) {
+        val current = _state.value.profile ?: return
+        val updated = reducer(current)
+        _state.update { it.copy(profile = updated) }
+        viewModelScope.launch { saveUserProfile(updated) }
+    }
 }
+
+private fun <T> Set<T>.toggle(item: T): Set<T> = if (item in this) this - item else this + item

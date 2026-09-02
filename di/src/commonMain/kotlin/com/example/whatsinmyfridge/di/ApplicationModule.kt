@@ -9,7 +9,6 @@ import com.example.whatsinmyfridge.application.photo.PhotoIngredientViewModel
 import com.example.whatsinmyfridge.application.profile.ProfileViewModel
 import com.example.whatsinmyfridge.application.saved.SavedRecipesViewModel
 import com.example.whatsinmyfridge.application.search.RecipeSearchViewModel
-import com.example.whatsinmyfridge.application.settings.SettingsViewModel
 import com.example.whatsinmyfridge.application.theme.ThemeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -20,7 +19,6 @@ val applicationModule = module {
     viewModelOf(::AuthViewModel)
     viewModelOf(::SavedRecipesViewModel)
     viewModelOf(::ProfileViewModel)
-    viewModelOf(::SettingsViewModel)
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::PhotoIngredientViewModel)
     viewModelOf(::PantryViewModel)

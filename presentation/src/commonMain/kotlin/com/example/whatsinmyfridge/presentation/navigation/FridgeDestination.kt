@@ -19,9 +19,6 @@ sealed interface FridgeDestination {
     data object Profile : FridgeDestination
 
     @Serializable
-    data object Settings : FridgeDestination
-
-    @Serializable
     data class RecipeDetail(
         val recipeId: Long,
         val usedIngredientNames: List<String> = emptyList(),

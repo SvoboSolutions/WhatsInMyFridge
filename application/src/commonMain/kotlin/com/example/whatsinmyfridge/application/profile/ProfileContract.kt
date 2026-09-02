@@ -1,6 +1,8 @@
 package com.example.whatsinmyfridge.application.profile
 
+import com.example.whatsinmyfridge.domain.model.Allergy
 import com.example.whatsinmyfridge.domain.model.CookingStats
+import com.example.whatsinmyfridge.domain.model.DietType
 import com.example.whatsinmyfridge.domain.model.ThemeMode
 import com.example.whatsinmyfridge.domain.model.UserProfile
 
@@ -12,6 +14,8 @@ data class ProfileState(
 )
 
 sealed interface ProfileIntent {
+    data class SelectDiet(val dietType: DietType) : ProfileIntent
+    data class ToggleAllergy(val allergy: Allergy) : ProfileIntent
     data class SetThemeMode(val themeMode: ThemeMode) : ProfileIntent
     data object SignOut : ProfileIntent
 }

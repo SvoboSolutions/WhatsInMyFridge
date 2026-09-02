@@ -29,7 +29,6 @@ import com.example.whatsinmyfridge.presentation.pantry.PantryRoute
 import com.example.whatsinmyfridge.presentation.profile.ProfileRoute
 import com.example.whatsinmyfridge.presentation.saved.SavedRecipesRoute
 import com.example.whatsinmyfridge.presentation.search.RecipeSearchRoute
-import com.example.whatsinmyfridge.presentation.settings.SettingsRoute
 
 @Composable
 fun FridgeNavHost(navController: NavHostController = rememberNavController()) {
@@ -131,10 +130,7 @@ fun FridgeNavHost(navController: NavHostController = rememberNavController()) {
                 )
             }
             composable<FridgeDestination.Profile> {
-                ProfileRoute(onSettingsClick = { navController.navigate(FridgeDestination.Settings) })
-            }
-            composable<FridgeDestination.Settings> {
-                SettingsRoute(onBack = { navController.popBackStack() })
+                ProfileRoute()
             }
             composable<FridgeDestination.RecipeDetail> { backStackEntry ->
                 val route: FridgeDestination.RecipeDetail = backStackEntry.toRoute()

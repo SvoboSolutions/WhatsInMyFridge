@@ -7,10 +7,7 @@ import com.example.whatsinmyfridge.application.profile.ProfileViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProfileRoute(
-    onSettingsClick: () -> Unit,
-    viewModel: ProfileViewModel = koinViewModel(),
-) {
+fun ProfileRoute(viewModel: ProfileViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState()
-    ProfileScreen(state = state, onIntent = viewModel::onIntent, onSettingsClick = onSettingsClick)
+    ProfileScreen(state = state, onIntent = viewModel::onIntent)
 }
