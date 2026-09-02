@@ -47,6 +47,9 @@ class RecipeSearchViewModel(
             is RecipeSearchIntent.RemoveIngredient ->
                 _state.update { it.copy(ingredients = it.ingredients - intent.ingredient) }
 
+            is RecipeSearchIntent.SetAllowExtraIngredients ->
+                _state.update { it.copy(allowExtraIngredients = intent.allow) }
+
             RecipeSearchIntent.Search -> search()
 
             is RecipeSearchIntent.ToggleSaveRecipe -> toggleSave(intent.recipe)
@@ -82,11 +85,12 @@ class RecipeSearchViewModel(
     private fun search() {
         val ingredients = _state.value.ingredients
         if (ingredients.isEmpty()) return
+        val allowExtraIngredients = _state.value.allowExtraIngredients
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            searchRecipesByIngredients(ingredients)
+            searchRecipesByIngredients(ingredients, allowExtraIngredients)
                 .onSuccess { recipes ->
                     _state.update { it.copy(isLoading = false, recipes = recipes, hasSearched = true) }
                 }

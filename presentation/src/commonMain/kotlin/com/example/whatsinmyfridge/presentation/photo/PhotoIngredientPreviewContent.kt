@@ -58,7 +58,7 @@ fun PhotoIngredientPreviewContent(
             modifier = Modifier.padding(top = FridgeSpacing.md, bottom = FridgeSpacing.sm),
         )
 
-        if (state.recognizedIngredients.isEmpty()) {
+        if (state.confirmedIngredients.isEmpty() && state.suggestedIngredients.isEmpty()) {
             Column(modifier = Modifier.padding(vertical = FridgeSpacing.lg)) {
                 Icon(Icons.Filled.SearchOff, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
                 Text(
@@ -74,7 +74,7 @@ fun PhotoIngredientPreviewContent(
                 verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                state.recognizedIngredients.forEach { name ->
+                state.confirmedIngredients.forEach { name ->
                     FilterChip(
                         selected = true,
                         onClick = { onIntent(PhotoIngredientIntent.RemoveIngredient(name)) },
@@ -84,6 +84,32 @@ fun PhotoIngredientPreviewContent(
                             Icon(Icons.Filled.Close, contentDescription = "Entfernen", modifier = Modifier.padding(2.dp))
                         },
                     )
+                }
+            }
+
+            if (state.suggestedIngredients.isNotEmpty()) {
+                Text(
+                    "Nicht ganz sicher - trotzdem übernehmen?",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = FridgeSpacing.md, bottom = FridgeSpacing.sm),
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    state.suggestedIngredients.forEach { name ->
+                        FilterChip(
+                            selected = false,
+                            onClick = { onIntent(PhotoIngredientIntent.ConfirmSuggestedIngredient(name)) },
+                            label = { Text(name.replaceFirstChar { it.titlecase() }) },
+                            shape = FridgePillShape,
+                            leadingIcon = {
+                                Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.padding(2.dp))
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -117,7 +143,7 @@ fun PhotoIngredientPreviewContent(
             shape = FridgePillShape,
             modifier = Modifier.padding(vertical = FridgeSpacing.md).fillMaxWidth().height(52.dp),
         ) {
-            Text("${state.recognizedIngredients.size} Zutaten übernehmen")
+            Text("${state.confirmedIngredients.size} Zutaten übernehmen")
         }
     }
 }

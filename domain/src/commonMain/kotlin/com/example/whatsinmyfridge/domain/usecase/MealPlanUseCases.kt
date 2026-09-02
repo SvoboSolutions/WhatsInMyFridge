@@ -22,6 +22,41 @@ class RemoveMealPlanEntryUseCase(private val mealPlanRepository: MealPlanReposit
 }
 
 /**
+ * Füllt alle noch leeren Tage der Auswahl auf einmal - ein Aufruf pro leerem Tag (Spoonacular
+ * oder KI, je nach Profil-Einstellung, via SuggestRecipesForDayUseCase), bereits belegte Tage
+ * werden nicht angetastet. Jeder neue Vorschlag schließt die Titel der bisher in diesem Lauf
+ * vergebenen Rezepte aus, damit nicht mehrfach dasselbe Gericht landet.
+ */
+class GenerateWeeklyMealPlanUseCase(
+    private val suggestRecipesForDay: SuggestRecipesForDayUseCase,
+    private val mealPlanRepository: MealPlanRepository,
+) {
+    suspend operator fun invoke(dates: List<LocalDate>, existingEntries: Map<LocalDate, MealPlanEntry>): Result<Unit> {
+        val emptyDates = dates.filterNot { it in existingEntries }
+        if (emptyDates.isEmpty()) return Result.success(Unit)
+
+        val usedTitles = mutableListOf<String>()
+        for (date in emptyDates) {
+            val recipe = suggestRecipesForDay(allowExtraIngredients = false, excludeTitles = usedTitles)
+                .getOrElse { return Result.failure(it) }
+                .firstOrNull()
+                ?: return Result.failure(IllegalStateException("Keine passenden Rezepte gefunden"))
+
+            usedTitles += recipe.title
+            mealPlanRepository.setEntry(
+                MealPlanEntry(
+                    date = date,
+                    recipeId = recipe.id,
+                    recipeTitle = recipe.title,
+                    recipeImageUrl = recipe.imageUrl,
+                ),
+            )
+        }
+        return Result.success(Unit)
+    }
+}
+
+/**
  * Holt für jedes geplante Rezept die vollständige Zutatenliste und zieht ab, was bereits in
  * der Vorratskammer liegt (Substring-Abgleich am Zutatentext, wie schon bei der Allergie-
  * Filterung - kein exaktes Matching nötig, "Hauptsache nichts Doppeltes auf dem Zettel").

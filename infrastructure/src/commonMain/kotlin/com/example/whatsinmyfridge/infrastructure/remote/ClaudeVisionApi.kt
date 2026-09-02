@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.infrastructure.remote
 
+import com.example.whatsinmyfridge.domain.model.IngredientRecognitionResult
 import com.example.whatsinmyfridge.infrastructure.remote.dto.ClaudeErrorResponseDto
 import com.example.whatsinmyfridge.infrastructure.remote.dto.ClaudeIngredientsPayloadDto
 import com.example.whatsinmyfridge.infrastructure.remote.dto.ClaudeMessageResponseDto
@@ -27,13 +28,17 @@ private const val ANTHROPIC_VERSION = "2023-06-01"
 
 private const val RECOGNITION_PROMPT = """
 Du siehst ein Foto aus einem Kühlschrank, einer Speisekammer oder von Lebensmitteln.
-Identifiziere alle einzelnen, klar erkennbaren Lebensmittel/Zutaten auf dem Bild.
+Identifiziere alle einzelnen, klar erkennbaren Lebensmittel/Zutaten auf dem Bild und teile
+sie in zwei Listen auf:
+- confidentIngredients: Zutaten, bei denen du dir SICHER bist.
+- uncertainIngredients: Zutaten, die du für möglich hältst, bei denen du dir aber NICHT
+  sicher bist (z.B. teilweise verdeckt, unscharf, mehrdeutig) - diese lieber mit aufnehmen
+  statt komplett wegzulassen, sie werden dem Nutzer separat zur Bestätigung angezeigt.
 Regeln:
 - Antworte ausschließlich auf Deutsch, kleingeschrieben, im Singular (z.B. "tomate" statt "tomaten").
 - Keine Markennamen, keine Verpackungsbeschreibungen, keine Mengenangaben.
-- Keine Duplikate.
-- Wenn du dir bei etwas unsicher bist, lass es weg statt zu raten.
-- Wenn keine Lebensmittel erkennbar sind, gib eine leere Liste zurück.
+- Keine Duplikate, auch nicht zwischen den beiden Listen.
+- Wenn keine Lebensmittel erkennbar sind, gib zwei leere Listen zurück.
 """
 
 private val lenientJson = Json { ignoreUnknownKeys = true }
@@ -41,13 +46,17 @@ private val lenientJson = Json { ignoreUnknownKeys = true }
 private val ingredientsSchema = buildJsonObject {
     put("type", "object")
     putJsonObject("properties") {
-        putJsonObject("ingredients") {
+        putJsonObject("confidentIngredients") {
+            put("type", "array")
+            putJsonObject("items") { put("type", "string") }
+        }
+        putJsonObject("uncertainIngredients") {
             put("type", "array")
             putJsonObject("items") { put("type", "string") }
         }
     }
     put("additionalProperties", false)
-    putJsonArray("required") { add("ingredients") }
+    putJsonArray("required") { add("confidentIngredients"); add("uncertainIngredients") }
 }
 
 /**
@@ -60,7 +69,7 @@ class ClaudeVisionApi(
     private val apiKey: String,
 ) {
     @OptIn(ExperimentalEncodingApi::class)
-    suspend fun recognizeIngredients(imageBytes: ByteArray): Result<List<String>> {
+    suspend fun recognizeIngredients(imageBytes: ByteArray): Result<IngredientRecognitionResult> {
         if (apiKey.isBlank()) {
             return Result.failure(IllegalStateException("Kein Anthropic API-Key konfiguriert"))
         }
@@ -124,7 +133,10 @@ class ClaudeVisionApi(
             return Result.failure(IllegalStateException("Antwort der Bilderkennung konnte nicht gelesen werden"))
         }
 
-        return Result.success(payload.ingredients.map { it.trim() }.filter { it.isNotBlank() }.distinct())
+        val confident = payload.confidentIngredients.map { it.trim() }.filter { it.isNotBlank() }.distinct()
+        val uncertain = payload.uncertainIngredients.map { it.trim() }.filter { it.isNotBlank() }.distinct().filterNot { it in confident }
+
+        return Result.success(IngredientRecognitionResult(confident = confident, uncertain = uncertain))
     }
 
     private suspend fun extractErrorMessage(response: HttpResponse): String =

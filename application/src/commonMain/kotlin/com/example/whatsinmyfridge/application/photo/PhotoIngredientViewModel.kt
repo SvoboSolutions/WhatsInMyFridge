@@ -27,7 +27,9 @@ class PhotoIngredientViewModel(
                 _state.update { it.copy(step = PhotoIngredientStep.SOURCE_CHOICE, errorMessage = null) }
 
             is PhotoIngredientIntent.RemoveIngredient ->
-                _state.update { it.copy(recognizedIngredients = it.recognizedIngredients - intent.name) }
+                _state.update { it.copy(confirmedIngredients = it.confirmedIngredients - intent.name) }
+
+            is PhotoIngredientIntent.ConfirmSuggestedIngredient -> confirmSuggested(intent.name)
 
             is PhotoIngredientIntent.UpdateManualInput ->
                 _state.update { it.copy(manualInput = intent.value) }
@@ -40,12 +42,22 @@ class PhotoIngredientViewModel(
         }
     }
 
+    private fun confirmSuggested(name: String) {
+        _state.update {
+            it.copy(
+                confirmedIngredients = (it.confirmedIngredients + name).distinct(),
+                suggestedIngredients = it.suggestedIngredients - name,
+            )
+        }
+    }
+
     private fun addManualIngredient() {
         val name = _state.value.manualInput.trim().lowercase()
         if (name.isEmpty()) return
         _state.update {
             it.copy(
-                recognizedIngredients = (it.recognizedIngredients + name).distinct(),
+                confirmedIngredients = (it.confirmedIngredients + name).distinct(),
+                suggestedIngredients = it.suggestedIngredients - name,
                 manualInput = "",
             )
         }
@@ -55,26 +67,33 @@ class PhotoIngredientViewModel(
      * Ergebnisse mehrerer Fotos innerhalb einer Session werden zusammengeführt statt sich
      * gegenseitig zu überschreiben - so kann man z.B. erst die Vorratskammer, dann den
      * Kühlschrank fotografieren und alles zusammen übernehmen. Case-insensitiv dedupliziert.
+     * Sichere Erkennungen landen direkt in der festen Liste, unsichere als Vorschlag, den
+     * man erst antippen muss, damit er übernommen wird.
      */
     private fun analyzePhoto(imageBytes: ByteArray) {
         viewModelScope.launch {
             _state.update { it.copy(step = PhotoIngredientStep.LOADING, errorMessage = null) }
 
             recognizeIngredientsFromPhoto(imageBytes)
-                .onSuccess { names ->
+                .onSuccess { result ->
                     _state.update { current ->
-                        val merged = (current.recognizedIngredients + names)
+                        val confirmed = (current.confirmedIngredients + result.confident)
                             .map { it.trim().lowercase() }
                             .filter { it.isNotBlank() }
                             .distinct()
-                        current.copy(step = PhotoIngredientStep.PREVIEW, recognizedIngredients = merged)
+                        val suggested = (current.suggestedIngredients + result.uncertain)
+                            .map { it.trim().lowercase() }
+                            .filter { it.isNotBlank() }
+                            .distinct()
+                            .filterNot { it in confirmed }
+                        current.copy(step = PhotoIngredientStep.PREVIEW, confirmedIngredients = confirmed, suggestedIngredients = suggested)
                     }
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Zutatenerkennung fehlgeschlagen", error)
                     _state.update { current ->
                         // Bereits erkannte Zutaten aus vorherigen Fotos dieser Session bleiben erhalten.
-                        val fallbackStep = if (current.recognizedIngredients.isEmpty()) {
+                        val fallbackStep = if (current.confirmedIngredients.isEmpty() && current.suggestedIngredients.isEmpty()) {
                             PhotoIngredientStep.SOURCE_CHOICE
                         } else {
                             PhotoIngredientStep.PREVIEW

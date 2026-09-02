@@ -15,12 +15,16 @@ data class MealPlanState(
     val isSuggesting: Boolean = false,
     val suggestionError: String? = null,
     val allowExtraIngredients: Boolean = false,
+    val isGeneratingWeek: Boolean = false,
     val isShoppingListOpen: Boolean = false,
     val isShoppingListLoading: Boolean = false,
     val shoppingList: List<ShoppingListEntry> = emptyList(),
     val checkedShoppingItems: Set<String> = emptySet(),
     val errorMessage: String? = null,
-)
+) {
+    val emptySelectedDayCount: Int get() = selectedDates.count { it !in entries }
+    val canGenerateWeek: Boolean get() = !isGeneratingWeek && emptySelectedDayCount > 0
+}
 
 sealed interface MealPlanIntent {
     data class ToggleDay(val date: LocalDate) : MealPlanIntent
@@ -30,6 +34,7 @@ sealed interface MealPlanIntent {
     data class RemoveEntry(val date: LocalDate) : MealPlanIntent
     data class SetAllowExtraIngredients(val allow: Boolean) : MealPlanIntent
     data object RequestSuggestions : MealPlanIntent
+    data object GenerateWeeklyPlan : MealPlanIntent
     data object OpenShoppingList : MealPlanIntent
     data object CloseShoppingList : MealPlanIntent
     data class ToggleShoppingItem(val item: String) : MealPlanIntent

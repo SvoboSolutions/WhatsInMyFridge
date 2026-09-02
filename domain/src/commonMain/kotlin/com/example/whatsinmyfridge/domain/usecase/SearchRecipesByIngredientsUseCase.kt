@@ -20,7 +20,7 @@ class SearchRecipesByIngredientsUseCase(
     private val aiRecipeRepository: AiRecipeRepository,
     private val userProfileRepository: UserProfileRepository,
 ) {
-    suspend operator fun invoke(ingredients: List<Ingredient>): Result<List<Recipe>> {
+    suspend operator fun invoke(ingredients: List<Ingredient>, allowExtraIngredients: Boolean = true): Result<List<Recipe>> {
         if (ingredients.isEmpty()) return Result.success(emptyList())
         val profile = userProfileRepository.observeProfile().first()
         val dietType = profile?.dietType ?: DietType.OMNIVORE
@@ -31,13 +31,14 @@ class SearchRecipesByIngredientsUseCase(
                 ingredients = ingredients,
                 dietType = dietType,
                 allergies = allergies,
+                maxMissingIngredients = if (allowExtraIngredients) 5 else 0,
             )
 
             RecipeSource.AI -> aiRecipeRepository.suggestRecipe(
                 ingredients = ingredients,
                 dietType = dietType,
                 allergies = allergies,
-                allowExtraIngredients = true,
+                allowExtraIngredients = allowExtraIngredients,
                 excludeTitles = emptyList(),
             ).map { recipe -> listOf(recipe) }
         }

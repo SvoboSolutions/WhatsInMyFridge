@@ -144,11 +144,27 @@ private fun SearchHeader(
             }
         }
 
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+            modifier = Modifier.padding(top = FridgeSpacing.md),
+        ) {
+            FilterChip(
+                selected = !state.allowExtraIngredients,
+                onClick = { onIntent(RecipeSearchIntent.SetAllowExtraIngredients(false)) },
+                label = { Text("Nur Zutaten") },
+            )
+            FilterChip(
+                selected = state.allowExtraIngredients,
+                onClick = { onIntent(RecipeSearchIntent.SetAllowExtraIngredients(true)) },
+                label = { Text("Mit Einkauf") },
+            )
+        }
+
         Button(
             onClick = { onIntent(RecipeSearchIntent.Search) },
             enabled = state.canSearch,
             shape = FridgePillShape,
-            modifier = Modifier.padding(vertical = FridgeSpacing.md).fillMaxWidth().height(52.dp),
+            modifier = Modifier.padding(top = FridgeSpacing.sm, bottom = FridgeSpacing.md).fillMaxWidth().height(52.dp),
         ) {
             Text("Rezepte suchen")
         }

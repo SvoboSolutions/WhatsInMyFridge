@@ -6,6 +6,7 @@ import com.example.whatsinmyfridge.core.logging.Logger
 import com.example.whatsinmyfridge.domain.model.MealPlanEntry
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.usecase.GenerateShoppingListUseCase
+import com.example.whatsinmyfridge.domain.usecase.GenerateWeeklyMealPlanUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveMealPlanUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveSavedRecipesUseCase
 import com.example.whatsinmyfridge.domain.usecase.RemoveMealPlanEntryUseCase
@@ -30,6 +31,7 @@ class MealPlanViewModel(
     private val observeMealPlan: ObserveMealPlanUseCase,
     private val observeSavedRecipes: ObserveSavedRecipesUseCase,
     private val suggestRecipesForDay: SuggestRecipesForDayUseCase,
+    private val generateWeeklyMealPlan: GenerateWeeklyMealPlanUseCase,
     private val setMealPlanEntry: SetMealPlanEntryUseCase,
     private val removeMealPlanEntry: RemoveMealPlanEntryUseCase,
     private val generateShoppingList: GenerateShoppingListUseCase,
@@ -68,6 +70,7 @@ class MealPlanViewModel(
             is MealPlanIntent.RemoveEntry -> viewModelScope.launch { removeMealPlanEntry(intent.date) }
             is MealPlanIntent.SetAllowExtraIngredients -> _state.update { it.copy(allowExtraIngredients = intent.allow) }
             MealPlanIntent.RequestSuggestions -> requestSuggestions()
+            MealPlanIntent.GenerateWeeklyPlan -> generateWeeklyPlan()
             MealPlanIntent.OpenShoppingList -> openShoppingList()
             MealPlanIntent.CloseShoppingList -> _state.update { it.copy(isShoppingListOpen = false) }
             is MealPlanIntent.ToggleShoppingItem -> toggleShoppingItem(intent.item)
@@ -125,6 +128,20 @@ class MealPlanViewModel(
                     Logger.e(TAG, "Rezeptvorschlag fehlgeschlagen", error)
                     _state.update { it.copy(isSuggesting = false, suggestionError = error.message ?: "Unbekannter Fehler") }
                 }
+        }
+    }
+
+    private fun generateWeeklyPlan() {
+        val dates = _state.value.selectedDates.toList()
+        val existingEntries = _state.value.entries
+        viewModelScope.launch {
+            _state.update { it.copy(isGeneratingWeek = true, errorMessage = null) }
+            generateWeeklyMealPlan(dates, existingEntries)
+                .onFailure { error ->
+                    Logger.e(TAG, "Wochenplan konnte nicht erstellt werden", error)
+                    _state.update { it.copy(errorMessage = error.message ?: "Unbekannter Fehler") }
+                }
+            _state.update { it.copy(isGeneratingWeek = false) }
         }
     }
 

@@ -17,7 +17,8 @@ data class ClaudeContentBlockDto(
 
 @Serializable
 data class ClaudeIngredientsPayloadDto(
-    val ingredients: List<String> = emptyList(),
+    val confidentIngredients: List<String> = emptyList(),
+    val uncertainIngredients: List<String> = emptyList(),
 )
 
 @Serializable

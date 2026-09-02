@@ -8,11 +8,12 @@ enum class PhotoIngredientStep {
 
 data class PhotoIngredientState(
     val step: PhotoIngredientStep = PhotoIngredientStep.SOURCE_CHOICE,
-    val recognizedIngredients: List<String> = emptyList(),
+    val confirmedIngredients: List<String> = emptyList(),
+    val suggestedIngredients: List<String> = emptyList(),
     val manualInput: String = "",
     val errorMessage: String? = null,
 ) {
-    val canConfirm: Boolean get() = recognizedIngredients.isNotEmpty()
+    val canConfirm: Boolean get() = confirmedIngredients.isNotEmpty()
 }
 
 sealed interface PhotoIngredientIntent {
@@ -23,6 +24,10 @@ sealed interface PhotoIngredientIntent {
     data object AddAnotherPhoto : PhotoIngredientIntent
 
     data class RemoveIngredient(val name: String) : PhotoIngredientIntent
+
+    /** Ein unsicherer Vorschlag wird vom Nutzer bestätigt und wandert in die feste Liste. */
+    data class ConfirmSuggestedIngredient(val name: String) : PhotoIngredientIntent
+
     data class UpdateManualInput(val value: String) : PhotoIngredientIntent
     data object AddManualIngredient : PhotoIngredientIntent
 

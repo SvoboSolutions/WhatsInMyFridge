@@ -137,7 +137,7 @@ fun PhotoIngredientDialog(
                             onIntent = onIntent,
                             onAddAnotherPhoto = { onIntent(PhotoIngredientIntent.AddAnotherPhoto) },
                             onConfirm = {
-                                onConfirm(state.recognizedIngredients)
+                                onConfirm(state.confirmedIngredients)
                                 dismissAndReset()
                             },
                         )

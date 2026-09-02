@@ -10,6 +10,7 @@ data class RecipeSearchState(
     val recipes: List<Recipe> = emptyList(),
     val hasSearched: Boolean = false,
     val savedRecipeIds: Set<Long> = emptySet(),
+    val allowExtraIngredients: Boolean = true,
     val errorMessage: String? = null,
 ) {
     val canSearch: Boolean get() = ingredients.isNotEmpty() && !isLoading
@@ -20,6 +21,7 @@ sealed interface RecipeSearchIntent {
     data object AddIngredient : RecipeSearchIntent
     data class AddIngredients(val names: List<String>) : RecipeSearchIntent
     data class RemoveIngredient(val ingredient: Ingredient) : RecipeSearchIntent
+    data class SetAllowExtraIngredients(val allow: Boolean) : RecipeSearchIntent
     data object Search : RecipeSearchIntent
     data class ToggleSaveRecipe(val recipe: Recipe) : RecipeSearchIntent
     data object DismissError : RecipeSearchIntent
