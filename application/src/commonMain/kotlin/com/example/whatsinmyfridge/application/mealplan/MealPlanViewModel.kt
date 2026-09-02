@@ -6,6 +6,7 @@ import com.example.whatsinmyfridge.core.logging.Logger
 import com.example.whatsinmyfridge.domain.model.MealPlanEntry
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.usecase.GenerateMealPlanSuggestionsUseCase
+import com.example.whatsinmyfridge.domain.usecase.GenerateShoppingListUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveMealPlanUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveSavedRecipesUseCase
 import com.example.whatsinmyfridge.domain.usecase.RemoveMealPlanEntryUseCase
@@ -31,6 +32,7 @@ class MealPlanViewModel(
     private val generateMealPlanSuggestions: GenerateMealPlanSuggestionsUseCase,
     private val setMealPlanEntry: SetMealPlanEntryUseCase,
     private val removeMealPlanEntry: RemoveMealPlanEntryUseCase,
+    private val generateShoppingList: GenerateShoppingListUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MealPlanState())
@@ -61,7 +63,34 @@ class MealPlanViewModel(
             MealPlanIntent.CloseRecipePicker -> _state.update { it.copy(recipePickerForDate = null) }
             is MealPlanIntent.AssignRecipe -> assignRecipe(intent.date, intent.recipe)
             is MealPlanIntent.RemoveEntry -> viewModelScope.launch { removeMealPlanEntry(intent.date) }
+            MealPlanIntent.OpenShoppingList -> openShoppingList()
+            MealPlanIntent.CloseShoppingList -> _state.update { it.copy(isShoppingListOpen = false) }
+            is MealPlanIntent.ToggleShoppingItem -> toggleShoppingItem(intent.item)
             MealPlanIntent.DismissError -> _state.update { it.copy(errorMessage = null) }
+        }
+    }
+
+    private fun openShoppingList() {
+        _state.update { it.copy(isShoppingListOpen = true, isShoppingListLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            val entries = _state.value.weekDates.mapNotNull { date -> _state.value.entries[date] }
+            generateShoppingList(entries)
+                .onSuccess { shoppingList ->
+                    _state.update { it.copy(isShoppingListLoading = false, shoppingList = shoppingList) }
+                }
+                .onFailure { error ->
+                    Logger.e(TAG, "Einkaufsliste konnte nicht erstellt werden", error)
+                    _state.update {
+                        it.copy(isShoppingListLoading = false, errorMessage = error.message ?: "Unbekannter Fehler")
+                    }
+                }
+        }
+    }
+
+    private fun toggleShoppingItem(item: String) {
+        _state.update { current ->
+            val checked = current.checkedShoppingItems
+            current.copy(checkedShoppingItems = if (item in checked) checked - item else checked + item)
         }
     }
 

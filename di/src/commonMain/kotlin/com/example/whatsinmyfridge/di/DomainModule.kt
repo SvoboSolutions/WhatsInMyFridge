@@ -2,6 +2,7 @@ package com.example.whatsinmyfridge.di
 
 import com.example.whatsinmyfridge.domain.usecase.AddPantryIngredientUseCase
 import com.example.whatsinmyfridge.domain.usecase.GenerateMealPlanSuggestionsUseCase
+import com.example.whatsinmyfridge.domain.usecase.GenerateShoppingListUseCase
 import com.example.whatsinmyfridge.domain.usecase.GetRecipeDetailsUseCase
 import com.example.whatsinmyfridge.domain.usecase.MarkRecipeAsCookedUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveCookedRecipesUseCase
@@ -45,4 +46,5 @@ val domainModule = module {
     factory { SetMealPlanEntryUseCase(get()) }
     factory { RemoveMealPlanEntryUseCase(get()) }
     factory { GenerateMealPlanSuggestionsUseCase(get(), get(), get()) }
+    factory { GenerateShoppingListUseCase(get(), get()) }
 }

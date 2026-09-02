@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SoupKitchen
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -46,6 +45,7 @@ import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.presentation.common.RecipeCard
+import com.example.whatsinmyfridge.presentation.common.RecipeCardSkeleton
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Keine ViewModel-/DI-Kenntnis.
@@ -162,10 +162,8 @@ private fun LazyListScope.searchResults(
     onRecipeClick: (Recipe) -> Unit,
 ) {
     when {
-        state.isLoading -> item {
-            Box(Modifier.fillMaxWidth().padding(top = FridgeSpacing.xxl), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+        state.isLoading -> items(3) {
+            RecipeCardSkeleton(modifier = Modifier.padding(bottom = FridgeSpacing.sm + FridgeSpacing.xs))
         }
 
         state.recipes.isEmpty() -> item { EmptySearchState(hasSearched = state.hasSearched) }

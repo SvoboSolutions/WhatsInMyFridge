@@ -12,11 +12,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -56,7 +58,16 @@ fun MealPlanScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Essenplan") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Essenplan") },
+                actions = {
+                    IconButton(onClick = { onIntent(MealPlanIntent.OpenShoppingList) }) {
+                        Icon(Icons.Filled.ShoppingCart, contentDescription = "Einkaufsliste")
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -118,6 +129,16 @@ fun MealPlanScreen(
             savedRecipes = state.savedRecipes,
             onPick = { recipe -> onIntent(MealPlanIntent.AssignRecipe(date, recipe)) },
             onDismiss = { onIntent(MealPlanIntent.CloseRecipePicker) },
+        )
+    }
+
+    if (state.isShoppingListOpen) {
+        ShoppingListSheet(
+            isLoading = state.isShoppingListLoading,
+            entries = state.shoppingList,
+            checkedItems = state.checkedShoppingItems,
+            onToggleItem = { onIntent(MealPlanIntent.ToggleShoppingItem(it)) },
+            onDismiss = { onIntent(MealPlanIntent.CloseShoppingList) },
         )
     }
 }

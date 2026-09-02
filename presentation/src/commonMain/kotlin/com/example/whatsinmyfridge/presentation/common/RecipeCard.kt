@@ -1,19 +1,25 @@
 package com.example.whatsinmyfridge.presentation.common
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,11 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.Recipe
+
+private val CardImageHeight = 150.dp
+private val MatchRingSize = 40.dp
 
 @Composable
 fun RecipeCard(
@@ -40,62 +49,93 @@ fun RecipeCard(
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.sm + FridgeSpacing.xs),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Box {
             if (recipe.imageUrl != null) {
                 AsyncImage(
                     model = recipe.imageUrl,
                     contentDescription = recipe.title,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(68.dp).clip(MaterialTheme.shapes.medium),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(CardImageHeight)
+                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
                 )
             } else {
                 Surface(
-                    shape = MaterialTheme.shapes.medium,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.size(68.dp),
+                    modifier = Modifier.fillMaxWidth().height(CardImageHeight),
                 ) {
-                    Icon(
-                        Icons.Filled.Kitchen,
-                        contentDescription = null,
-                        modifier = Modifier.padding(FridgeSpacing.md),
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Filled.Kitchen,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
                 }
             }
 
-            Column(modifier = Modifier.weight(1f).padding(horizontal = FridgeSpacing.sm + FridgeSpacing.xs)) {
-                Text(recipe.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
-                IngredientStatusBadge(missedCount = recipe.missedIngredientCount)
-            }
-
-            IconButton(onClick = onToggleSave) {
+            IconButton(
+                onClick = onToggleSave,
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    contentColor = MaterialTheme.colorScheme.primary,
+                ),
+                modifier = Modifier.align(Alignment.TopEnd).padding(FridgeSpacing.sm),
+            ) {
                 Icon(
                     if (isSaved) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
                     contentDescription = if (isSaved) "Gespeichert" else "Speichern",
-                    tint = MaterialTheme.colorScheme.primary,
                 )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.sm + FridgeSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                recipe.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f).padding(end = FridgeSpacing.sm),
+            )
+
+            if (recipe.usedIngredients.isNotEmpty() || recipe.missedIngredients.isNotEmpty()) {
+                MatchRing(usedCount = recipe.usedIngredients.size, missedCount = recipe.missedIngredientCount)
             }
         }
     }
 }
 
+/** Fortschrittsring: Anteil vorhandener Zutaten statt reinem "Fehlt: X"-Text - auf einen Blick erfassbar. */
 @Composable
-private fun IngredientStatusBadge(missedCount: Int, modifier: Modifier = Modifier) {
+private fun MatchRing(usedCount: Int, missedCount: Int, modifier: Modifier = Modifier) {
+    val total = usedCount + missedCount
+    val fraction = if (total == 0) 1f else usedCount.toFloat() / total
     val complete = missedCount == 0
-    Surface(
-        shape = FridgePillShape,
-        color = if (complete) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        modifier = modifier.padding(top = FridgeSpacing.xs),
-    ) {
+    val ringColor = if (complete) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+
+    Box(modifier = modifier.size(MatchRingSize), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+            progress = { fraction },
+            modifier = Modifier.size(MatchRingSize),
+            color = ringColor,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            strokeWidth = 4.dp,
+            strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
+        )
         Text(
-            if (complete) "Alle Zutaten vorhanden" else "Fehlt: $missedCount Zutat(en)",
+            "${(fraction * 100).toInt()}%",
             style = MaterialTheme.typography.labelSmall,
-            color = if (complete) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = FridgeSpacing.sm, vertical = 3.dp),
+            fontWeight = FontWeight.Bold,
+            color = ringColor,
         )
     }
 }

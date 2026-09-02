@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +26,7 @@ import com.example.whatsinmyfridge.application.saved.SavedRecipesState
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.presentation.common.RecipeCard
+import com.example.whatsinmyfridge.presentation.common.RecipeCardSkeleton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,10 +37,13 @@ fun SavedRecipesScreen(
 ) {
     Scaffold(topBar = { TopAppBar(title = { Text("Gespeicherte Rezepte") }) }) { padding ->
         when {
-            state.isLoading -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center,
-            ) { CircularProgressIndicator() }
+            state.isLoading -> LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = FridgeSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm + FridgeSpacing.xs),
+                contentPadding = PaddingValues(top = FridgeSpacing.sm + FridgeSpacing.xs, bottom = FridgeSpacing.md),
+            ) {
+                items(3) { RecipeCardSkeleton() }
+            }
 
             state.recipes.isEmpty() -> Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(top = FridgeSpacing.xxl),
