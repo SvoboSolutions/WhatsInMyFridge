@@ -16,6 +16,12 @@ fun ThemeMode.label(): String = when (this) {
     ThemeMode.LIGHT -> "Hell"
     ThemeMode.DARK -> "Dunkel"
     ThemeMode.PLAYFUL -> "Verspielt"
+    ThemeMode.SUNSET -> "Sonnenuntergang"
+    ThemeMode.BERRY -> "Beere"
+    ThemeMode.SAGE -> "Salbei"
+    ThemeMode.POMEGRANATE -> "Granatapfel"
+    ThemeMode.CITRUS -> "Zitrus"
+    ThemeMode.MIDNIGHT -> "Mitternacht"
 }
 
 fun Allergy.label(): String = when (this) {

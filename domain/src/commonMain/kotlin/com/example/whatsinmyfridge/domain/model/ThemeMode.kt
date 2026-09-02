@@ -5,4 +5,10 @@ enum class ThemeMode {
     LIGHT,
     DARK,
     PLAYFUL,
+    SUNSET,
+    BERRY,
+    SAGE,
+    POMEGRANATE,
+    CITRUS,
+    MIDNIGHT,
 }
