@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.pantry
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -39,6 +42,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.application.pantry.MAX_PANTRY_SIZE
@@ -46,6 +51,7 @@ import com.example.whatsinmyfridge.application.pantry.PantryIntent
 import com.example.whatsinmyfridge.application.pantry.PantryState
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
+import com.example.whatsinmyfridge.domain.model.Ingredient
 import com.example.whatsinmyfridge.domain.model.IngredientCategory
 import com.example.whatsinmyfridge.domain.model.categorizeIngredient
 
@@ -152,41 +158,84 @@ fun PantryScreen(
 
                 IngredientCategory.entries.forEach { category ->
                     val items = grouped[category] ?: return@forEach
-                    Text(
-                        category.displayName,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = FridgeSpacing.md, bottom = FridgeSpacing.xs),
+                    CategorySection(
+                        category = category,
+                        items = items,
+                        selectedForDeletion = state.selectedForDeletion,
+                        onToggle = { onIntent(PantryIntent.ToggleSelectForDeletion(it)) },
                     )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-                        verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        items.forEach { ingredient ->
-                            val isMarked = ingredient in state.selectedForDeletion
-                            FilterChip(
-                                selected = isMarked,
-                                onClick = { onIntent(PantryIntent.ToggleSelectForDeletion(ingredient)) },
-                                label = { Text(ingredient.name) },
-                                shape = FridgePillShape,
-                                leadingIcon = if (isMarked) {
-                                    { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
-                                } else {
-                                    null
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
-                                    selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
-                                ),
-                            )
-                        }
-                    }
                 }
 
                 Box(modifier = Modifier.height(FridgeSpacing.lg))
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategorySection(
+    category: IngredientCategory,
+    items: List<Ingredient>,
+    selectedForDeletion: Set<Ingredient>,
+    onToggle: (Ingredient) -> Unit,
+) {
+    val ui = category.ui
+
+    Column(modifier = Modifier.padding(top = FridgeSpacing.md)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(ui.color),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(ui.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            }
+            Text(
+                category.displayName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f).padding(horizontal = FridgeSpacing.sm),
+            )
+            Surface(
+                shape = CircleShape,
+                color = ui.color.copy(alpha = 0.15f),
+            ) {
+                Text(
+                    "${items.size}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ui.color,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = FridgeSpacing.sm, vertical = 2.dp),
+                )
+            }
+        }
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
+            modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.sm),
+        ) {
+            items.forEach { ingredient ->
+                val isMarked = ingredient in selectedForDeletion
+                FilterChip(
+                    selected = isMarked,
+                    onClick = { onToggle(ingredient) },
+                    label = { Text(ingredient.name) },
+                    shape = FridgePillShape,
+                    leadingIcon = if (isMarked) {
+                        { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
+                    } else {
+                        null
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = ui.color.copy(alpha = 0.12f),
+                        labelColor = ui.color,
+                        iconColor = ui.color,
+                        selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                    border = null,
+                )
             }
         }
     }
