@@ -135,7 +135,7 @@ private fun SearchHeader(
                     FilterChip(
                         selected = true,
                         onClick = { onIntent(RecipeSearchIntent.RemoveIngredient(ingredient)) },
-                        label = { Text(ingredient.name) },
+                        label = { Text(ingredient.name.replaceFirstChar { it.titlecase() }) },
                         shape = FridgePillShape,
                         trailingIcon = {
                             Icon(Icons.Filled.Close, contentDescription = "Entfernen", modifier = Modifier.padding(2.dp))

@@ -78,7 +78,7 @@ fun PhotoIngredientPreviewContent(
                     FilterChip(
                         selected = true,
                         onClick = { onIntent(PhotoIngredientIntent.RemoveIngredient(name)) },
-                        label = { Text(name) },
+                        label = { Text(name.replaceFirstChar { it.titlecase() }) },
                         shape = FridgePillShape,
                         trailingIcon = {
                             Icon(Icons.Filled.Close, contentDescription = "Entfernen", modifier = Modifier.padding(2.dp))

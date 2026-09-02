@@ -219,7 +219,7 @@ private fun CategorySection(
                 FilterChip(
                     selected = isMarked,
                     onClick = { onToggle(ingredient) },
-                    label = { Text(ingredient.name) },
+                    label = { Text(ingredient.name.replaceFirstChar { it.titlecase() }) },
                     shape = FridgePillShape,
                     leadingIcon = if (isMarked) {
                         { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.padding(2.dp)) }
