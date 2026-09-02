@@ -187,7 +187,7 @@ fun LoginScreen() {
                     "oder",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.padding(horizontal = FridgeSpacing.sm + FridgeSpacing.xs),
+                    modifier = Modifier.padding(horizontal = FridgeSpacing.smMd),
                 )
                 HorizontalDivider(Modifier.weight(1f))
             }

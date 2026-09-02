@@ -51,7 +51,7 @@ fun MealPlanDayCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.sm + FridgeSpacing.xs),
+            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.smMd),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.width(FridgeSpacing.xxl)) {

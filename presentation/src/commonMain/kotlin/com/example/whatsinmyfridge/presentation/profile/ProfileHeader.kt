@@ -33,7 +33,7 @@ fun ProfileHeader(displayName: String, email: String?, modifier: Modifier = Modi
             displayName,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs),
+            modifier = Modifier.padding(top = FridgeSpacing.smMd),
         )
         if (email != null) {
             Text(email, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

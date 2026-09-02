@@ -52,7 +52,7 @@ private fun InfoChip(icon: ImageVector, text: String) {
     Surface(shape = FridgePillShape, color = MaterialTheme.colorScheme.secondaryContainer) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = FridgeSpacing.sm + FridgeSpacing.xs, vertical = FridgeSpacing.xs),
+            modifier = Modifier.padding(horizontal = FridgeSpacing.smMd, vertical = FridgeSpacing.xs),
         ) {
             Icon(
                 icon,

@@ -85,7 +85,7 @@ fun RecipeCard(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
                     contentColor = MaterialTheme.colorScheme.primary,
                 ),
-                modifier = Modifier.align(Alignment.TopEnd).padding(FridgeSpacing.sm),
+                modifier = Modifier.align(Alignment.TopEnd).padding(FridgeSpacing.smMd),
             ) {
                 Icon(
                     if (isSaved) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
@@ -95,7 +95,7 @@ fun RecipeCard(
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.sm + FridgeSpacing.xs),
+            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.smMd),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(

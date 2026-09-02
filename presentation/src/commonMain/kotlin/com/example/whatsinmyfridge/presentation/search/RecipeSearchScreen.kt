@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.search
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -35,17 +35,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.application.search.RecipeSearchIntent
 import com.example.whatsinmyfridge.application.search.RecipeSearchState
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.Recipe
+import com.example.whatsinmyfridge.presentation.common.EmptyStateColumn
 import com.example.whatsinmyfridge.presentation.common.RecipeCard
 import com.example.whatsinmyfridge.presentation.common.RecipeCardSkeleton
+import com.example.whatsinmyfridge.presentation.common.ScreenHeaderRow
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Keine ViewModel-/DI-Kenntnis.
@@ -98,11 +98,10 @@ private fun SearchHeader(
     onOpenPhotoRecognition: () -> Unit,
 ) {
     Column {
-        Text(
-            "Zutaten eingeben, die du zuhause hast",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs, bottom = FridgeSpacing.sm),
+        ScreenHeaderRow(
+            icon = Icons.Filled.Search,
+            text = "Zutaten eingeben, die du zuhause hast",
+            modifier = Modifier.padding(top = FridgeSpacing.smMd, bottom = FridgeSpacing.sm),
         )
 
         OutlinedTextField(
@@ -129,7 +128,7 @@ private fun SearchHeader(
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
                 verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-                modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs).fillMaxWidth(),
+                modifier = Modifier.padding(top = FridgeSpacing.smMd).fillMaxWidth().animateContentSize(),
             ) {
                 state.ingredients.forEach { ingredient ->
                     FilterChip(
@@ -163,10 +162,20 @@ private fun LazyListScope.searchResults(
 ) {
     when {
         state.isLoading -> items(3) {
-            RecipeCardSkeleton(modifier = Modifier.padding(bottom = FridgeSpacing.sm + FridgeSpacing.xs))
+            RecipeCardSkeleton(modifier = Modifier.padding(bottom = FridgeSpacing.smMd))
         }
 
-        state.recipes.isEmpty() -> item { EmptySearchState(hasSearched = state.hasSearched) }
+        state.recipes.isEmpty() -> item {
+            EmptyStateColumn(
+                icon = Icons.Filled.SoupKitchen,
+                title = if (state.hasSearched) "Keine Treffer für diese Zutaten" else "Noch keine Rezepte",
+                subtitle = if (state.hasSearched) {
+                    "Versuch es mit mehr Zutaten oder prüfe deine Diät-/Allergie-Filter im Profil"
+                } else {
+                    "Füge Zutaten hinzu und starte die Suche"
+                },
+            )
+        }
 
         else -> items(state.recipes, key = { it.id }) { recipe ->
             RecipeCard(
@@ -174,46 +183,9 @@ private fun LazyListScope.searchResults(
                 isSaved = recipe.id in state.savedRecipeIds,
                 onClick = { onRecipeClick(recipe) },
                 onToggleSave = { onIntent(RecipeSearchIntent.ToggleSaveRecipe(recipe)) },
+                modifier = Modifier.animateItem(),
             )
-            Box(Modifier.height(FridgeSpacing.sm + FridgeSpacing.xs))
-        }
-    }
-}
-
-@Composable
-private fun EmptySearchState(hasSearched: Boolean) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = FridgeSpacing.xxl),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            Icons.Filled.SoupKitchen,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(56.dp).padding(bottom = FridgeSpacing.sm + FridgeSpacing.xs),
-        )
-        if (hasSearched) {
-            Text(
-                "Keine Treffer für diese Zutaten",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                "Versuch es mit mehr Zutaten oder prüfe deine Diät-/Allergie-Filter im Profil",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
-            )
-        } else {
-            Text(
-                "Noch keine Rezepte",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                "Füge Zutaten hinzu und starte die Suche",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
-            )
+            Box(Modifier.height(FridgeSpacing.smMd))
         }
     }
 }

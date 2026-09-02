@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.pantry
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +55,8 @@ import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.Ingredient
 import com.example.whatsinmyfridge.domain.model.IngredientCategory
 import com.example.whatsinmyfridge.domain.model.categorizeIngredient
+import com.example.whatsinmyfridge.presentation.common.EmptyStateColumn
+import com.example.whatsinmyfridge.presentation.common.ScreenHeaderRow
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Zeigt alles, was dauerhaft in
@@ -87,10 +90,10 @@ fun PantryScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = FridgeSpacing.md),
         ) {
-            Text(
-                "Was hast du dauerhaft zuhause?",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = FridgeSpacing.sm + FridgeSpacing.xs, bottom = FridgeSpacing.sm),
+            ScreenHeaderRow(
+                icon = Icons.Filled.Kitchen,
+                text = "Was hast du dauerhaft zuhause?",
+                modifier = Modifier.padding(top = FridgeSpacing.smMd, bottom = FridgeSpacing.sm),
             )
 
             OutlinedTextField(
@@ -151,7 +154,11 @@ fun PantryScreen(
             }
 
             if (state.ingredients.isEmpty()) {
-                EmptyPantryState()
+                EmptyStateColumn(
+                    icon = Icons.Filled.Kitchen,
+                    title = "Noch leer",
+                    subtitle = "Füge hinzu, was du dauerhaft zuhause hast - per Text oder Foto",
+                )
             } else {
                 val grouped = state.ingredients
                     .groupBy { categorizeIngredient(it.name) }
@@ -212,7 +219,7 @@ private fun CategorySection(
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
             verticalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
-            modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.sm),
+            modifier = Modifier.fillMaxWidth().padding(top = FridgeSpacing.sm).animateContentSize(),
         ) {
             items.forEach { ingredient ->
                 val isMarked = ingredient in selectedForDeletion
@@ -238,30 +245,5 @@ private fun CategorySection(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun EmptyPantryState() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = FridgeSpacing.xxl),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Icon(
-            Icons.Filled.Kitchen,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(56.dp).padding(bottom = FridgeSpacing.sm + FridgeSpacing.xs),
-        )
-        Text(
-            "Noch leer",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            "Füge hinzu, was du dauerhaft zuhause hast - per Text oder Foto",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline,
-        )
     }
 }

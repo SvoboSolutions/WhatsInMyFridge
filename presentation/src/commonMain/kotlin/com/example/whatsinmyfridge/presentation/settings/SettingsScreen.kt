@@ -55,7 +55,7 @@ fun SettingsScreen(state: SettingsState, onIntent: (SettingsIntent) -> Unit, onB
         }
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(FridgeSpacing.lg - FridgeSpacing.xs),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(FridgeSpacing.lg),
         ) {
             SettingsSection(title = "Ernährungsweise") {

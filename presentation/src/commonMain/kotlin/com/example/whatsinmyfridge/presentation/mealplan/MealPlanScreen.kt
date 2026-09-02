@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,13 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.application.mealplan.MealPlanIntent
 import com.example.whatsinmyfridge.application.mealplan.MealPlanState
 import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.domain.model.MealPlanEntry
+import com.example.whatsinmyfridge.presentation.common.ScreenHeaderRow
 
 /**
  * Reine UI: bekommt fertigen State + sendet Intents. Tage antippen um sie ein-/auszuschließen,
@@ -71,10 +72,9 @@ fun MealPlanScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Text(
-                "Für welche Tage planen?",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
+            ScreenHeaderRow(
+                icon = Icons.Filled.CalendarMonth,
+                text = "Für welche Tage planen?",
                 modifier = Modifier.padding(horizontal = FridgeSpacing.md, vertical = FridgeSpacing.sm),
             )
 

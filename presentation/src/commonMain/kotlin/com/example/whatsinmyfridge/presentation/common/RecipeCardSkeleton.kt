@@ -49,7 +49,7 @@ fun RecipeCardSkeleton(modifier: Modifier = Modifier) {
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.sm + FridgeSpacing.xs),
+            modifier = Modifier.fillMaxWidth().padding(FridgeSpacing.smMd),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Box(

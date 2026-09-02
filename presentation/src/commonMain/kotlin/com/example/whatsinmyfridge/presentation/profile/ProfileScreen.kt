@@ -17,6 +17,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.application.profile.ProfileState
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 
@@ -43,8 +44,8 @@ fun ProfileScreen(state: ProfileState, onSettingsClick: () -> Unit) {
         }
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(FridgeSpacing.lg - FridgeSpacing.xs),
-            verticalArrangement = Arrangement.spacedBy(FridgeSpacing.lg - FridgeSpacing.xs),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             ProfileHeader(displayName = state.profile?.displayName.orEmpty(), email = state.email)
             ScoreCard(stats = state.stats)
