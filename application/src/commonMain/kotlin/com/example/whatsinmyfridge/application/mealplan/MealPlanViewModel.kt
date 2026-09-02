@@ -67,6 +67,14 @@ class MealPlanViewModel(
             MealPlanIntent.CloseShoppingList -> _state.update { it.copy(isShoppingListOpen = false) }
             is MealPlanIntent.ToggleShoppingItem -> toggleShoppingItem(intent.item)
             MealPlanIntent.DismissError -> _state.update { it.copy(errorMessage = null) }
+            MealPlanIntent.ResetPlan -> resetPlan()
+        }
+    }
+
+    private fun resetPlan() {
+        val dates = _state.value.entries.keys.toList()
+        viewModelScope.launch {
+            dates.forEach { date -> removeMealPlanEntry(date) }
         }
     }
 

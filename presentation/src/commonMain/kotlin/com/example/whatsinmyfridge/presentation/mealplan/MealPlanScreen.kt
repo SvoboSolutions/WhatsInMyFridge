@@ -1,5 +1,6 @@
 package com.example.whatsinmyfridge.presentation.mealplan
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +23,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,14 +35,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +85,7 @@ fun MealPlanScreen(
     onRecipeClick: (MealPlanEntry) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var showResetConfirmation by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
@@ -102,7 +112,7 @@ fun MealPlanScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(FridgeSpacing.md, bottom = FridgeSpacing.xl),
+            contentPadding = PaddingValues(start = FridgeSpacing.md, end = FridgeSpacing.md, bottom = FridgeSpacing.xl),
             verticalArrangement = Arrangement.spacedBy(FridgeSpacing.md),
         ) {
             item {
@@ -135,7 +145,45 @@ fun MealPlanScreen(
                     )
                 }
             }
+
+            if (state.entries.isNotEmpty()) {
+                item {
+                    OutlinedButton(
+                        onClick = { showResetConfirmation = true },
+                        shape = FridgePillShape,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
+                        modifier = Modifier.fillMaxWidth().height(52.dp).padding(top = FridgeSpacing.sm),
+                    ) {
+                        Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.padding(end = FridgeSpacing.sm))
+                        Text("Plan zurücksetzen", fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
         }
+    }
+
+    if (showResetConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirmation = false },
+            title = { Text("Plan zurücksetzen?") },
+            text = { Text("Alle für diese Woche geplanten Rezepte werden entfernt. Die Tagesauswahl bleibt erhalten.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onIntent(MealPlanIntent.ResetPlan)
+                        showResetConfirmation = false
+                    },
+                ) {
+                    Text("Zurücksetzen", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirmation = false }) {
+                    Text("Abbrechen")
+                }
+            },
+        )
     }
 
     state.recipePickerForDate?.let { date ->

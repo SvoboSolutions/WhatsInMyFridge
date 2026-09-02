@@ -32,4 +32,5 @@ sealed interface MealPlanIntent {
     data object CloseShoppingList : MealPlanIntent
     data class ToggleShoppingItem(val item: String) : MealPlanIntent
     data object DismissError : MealPlanIntent
+    data object ResetPlan : MealPlanIntent
 }
