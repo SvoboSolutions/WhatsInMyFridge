@@ -41,6 +41,7 @@ class ProfileViewModel(
             is ProfileIntent.SelectDiet -> persist { it.copy(dietType = intent.dietType) }
             is ProfileIntent.ToggleAllergy -> persist { it.copy(allergies = it.allergies.toggle(intent.allergy)) }
             is ProfileIntent.SetThemeMode -> persist { it.copy(themeMode = intent.themeMode) }
+            is ProfileIntent.SetRecipeSource -> persist { it.copy(recipeSource = intent.recipeSource) }
             ProfileIntent.SignOut -> viewModelScope.launch { signOut() }
         }
     }

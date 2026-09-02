@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.whatsinmyfridge.core.logging.Logger
 import com.example.whatsinmyfridge.domain.model.MealPlanEntry
 import com.example.whatsinmyfridge.domain.model.Recipe
-import com.example.whatsinmyfridge.domain.usecase.GenerateMealPlanSuggestionsUseCase
 import com.example.whatsinmyfridge.domain.usecase.GenerateShoppingListUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveMealPlanUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveSavedRecipesUseCase
 import com.example.whatsinmyfridge.domain.usecase.RemoveMealPlanEntryUseCase
 import com.example.whatsinmyfridge.domain.usecase.SetMealPlanEntryUseCase
+import com.example.whatsinmyfridge.domain.usecase.SuggestRecipesForDayUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +29,7 @@ private const val PLANNED_DAYS = 7
 class MealPlanViewModel(
     private val observeMealPlan: ObserveMealPlanUseCase,
     private val observeSavedRecipes: ObserveSavedRecipesUseCase,
-    private val generateMealPlanSuggestions: GenerateMealPlanSuggestionsUseCase,
+    private val suggestRecipesForDay: SuggestRecipesForDayUseCase,
     private val setMealPlanEntry: SetMealPlanEntryUseCase,
     private val removeMealPlanEntry: RemoveMealPlanEntryUseCase,
     private val generateShoppingList: GenerateShoppingListUseCase,
@@ -58,11 +58,16 @@ class MealPlanViewModel(
     fun onIntent(intent: MealPlanIntent) {
         when (intent) {
             is MealPlanIntent.ToggleDay -> toggleDay(intent.date)
-            MealPlanIntent.GenerateSuggestions -> generateSuggestions()
-            is MealPlanIntent.OpenRecipePicker -> _state.update { it.copy(recipePickerForDate = intent.date) }
-            MealPlanIntent.CloseRecipePicker -> _state.update { it.copy(recipePickerForDate = null) }
+            is MealPlanIntent.OpenRecipePicker -> _state.update {
+                it.copy(recipePickerForDate = intent.date, suggestions = emptyList(), suggestionError = null, allowExtraIngredients = false)
+            }
+            MealPlanIntent.CloseRecipePicker -> _state.update {
+                it.copy(recipePickerForDate = null, suggestions = emptyList(), suggestionError = null)
+            }
             is MealPlanIntent.AssignRecipe -> assignRecipe(intent.date, intent.recipe)
             is MealPlanIntent.RemoveEntry -> viewModelScope.launch { removeMealPlanEntry(intent.date) }
+            is MealPlanIntent.SetAllowExtraIngredients -> _state.update { it.copy(allowExtraIngredients = intent.allow) }
+            MealPlanIntent.RequestSuggestions -> requestSuggestions()
             MealPlanIntent.OpenShoppingList -> openShoppingList()
             MealPlanIntent.CloseShoppingList -> _state.update { it.copy(isShoppingListOpen = false) }
             is MealPlanIntent.ToggleShoppingItem -> toggleShoppingItem(intent.item)
@@ -109,16 +114,17 @@ class MealPlanViewModel(
         }
     }
 
-    private fun generateSuggestions() {
-        val dates = _state.value.selectedDates.toList()
+    private fun requestSuggestions() {
+        val excludeTitles = _state.value.suggestions.map { it.title }
+        val allowExtraIngredients = _state.value.allowExtraIngredients
         viewModelScope.launch {
-            _state.update { it.copy(isGenerating = true, errorMessage = null) }
-            generateMealPlanSuggestions(dates)
+            _state.update { it.copy(isSuggesting = true, suggestionError = null) }
+            suggestRecipesForDay(allowExtraIngredients, excludeTitles)
+                .onSuccess { recipes -> _state.update { it.copy(isSuggesting = false, suggestions = recipes) } }
                 .onFailure { error ->
-                    Logger.e(TAG, "Essenplan-Vorschläge fehlgeschlagen", error)
-                    _state.update { it.copy(errorMessage = error.message ?: "Unbekannter Fehler") }
+                    Logger.e(TAG, "Rezeptvorschlag fehlgeschlagen", error)
+                    _state.update { it.copy(isSuggesting = false, suggestionError = error.message ?: "Unbekannter Fehler") }
                 }
-            _state.update { it.copy(isGenerating = false) }
         }
     }
 
@@ -132,7 +138,7 @@ class MealPlanViewModel(
                     recipeImageUrl = recipe.imageUrl,
                 ),
             )
-            _state.update { it.copy(recipePickerForDate = null) }
+            _state.update { it.copy(recipePickerForDate = null, suggestions = emptyList(), suggestionError = null) }
         }
     }
 }

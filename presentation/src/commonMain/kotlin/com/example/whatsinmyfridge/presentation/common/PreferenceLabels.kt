@@ -2,6 +2,7 @@ package com.example.whatsinmyfridge.presentation.common
 
 import com.example.whatsinmyfridge.domain.model.Allergy
 import com.example.whatsinmyfridge.domain.model.DietType
+import com.example.whatsinmyfridge.domain.model.RecipeSource
 import com.example.whatsinmyfridge.domain.model.ThemeMode
 
 fun DietType.label(): String = when (this) {
@@ -23,6 +24,11 @@ fun ThemeMode.label(): String = when (this) {
     ThemeMode.CITRUS -> "Zitrus"
     ThemeMode.MIDNIGHT -> "Mitternacht"
     ThemeMode.KONTRAST -> "Kontrast"
+}
+
+fun RecipeSource.label(): String = when (this) {
+    RecipeSource.DATABASE -> "Datenbank"
+    RecipeSource.AI -> "KI"
 }
 
 fun Allergy.label(): String = when (this) {

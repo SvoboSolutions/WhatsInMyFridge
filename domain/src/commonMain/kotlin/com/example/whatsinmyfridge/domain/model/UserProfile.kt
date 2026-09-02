@@ -7,4 +7,5 @@ data class UserProfile(
     val allergies: Set<Allergy> = emptySet(),
     val onboardingCompleted: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val recipeSource: RecipeSource = RecipeSource.DATABASE,
 )

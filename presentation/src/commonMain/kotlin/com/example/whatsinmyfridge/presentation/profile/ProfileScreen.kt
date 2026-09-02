@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.NoFood
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restaurant
@@ -42,6 +43,7 @@ import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 import com.example.whatsinmyfridge.presentation.common.AllergySelector
 import com.example.whatsinmyfridge.presentation.common.DietSelector
+import com.example.whatsinmyfridge.presentation.common.RecipeSourceSelector
 import com.example.whatsinmyfridge.presentation.common.ThemeModeSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,6 +92,18 @@ fun ProfileScreen(state: ProfileState, onIntent: (ProfileIntent) -> Unit) {
                 AllergySelector(
                     selected = profile.allergies,
                     onToggle = { onIntent(ProfileIntent.ToggleAllergy(it)) },
+                )
+            }
+
+            ProfileSectionCard(
+                title = "Rezeptquelle",
+                icon = Icons.Filled.AutoAwesome,
+                accentContainer = MaterialTheme.colorScheme.tertiaryContainer,
+                onAccent = MaterialTheme.colorScheme.onTertiaryContainer,
+            ) {
+                RecipeSourceSelector(
+                    selected = profile.recipeSource,
+                    onSelect = { onIntent(ProfileIntent.SetRecipeSource(it)) },
                 )
             }
 

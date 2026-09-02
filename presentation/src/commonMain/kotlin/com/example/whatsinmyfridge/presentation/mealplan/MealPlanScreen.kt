@@ -3,7 +3,6 @@ package com.example.whatsinmyfridge.presentation.mealplan
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -29,7 +27,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,9 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -189,6 +184,12 @@ fun MealPlanScreen(
     state.recipePickerForDate?.let { date ->
         RecipePickerSheet(
             savedRecipes = state.savedRecipes,
+            suggestions = state.suggestions,
+            isSuggesting = state.isSuggesting,
+            suggestionError = state.suggestionError,
+            allowExtraIngredients = state.allowExtraIngredients,
+            onAllowExtraIngredientsChange = { onIntent(MealPlanIntent.SetAllowExtraIngredients(it)) },
+            onRequestSuggestions = { onIntent(MealPlanIntent.RequestSuggestions) },
             onPick = { recipe -> onIntent(MealPlanIntent.AssignRecipe(date, recipe)) },
             onDismiss = { onIntent(MealPlanIntent.CloseRecipePicker) },
         )
@@ -269,59 +270,6 @@ private fun PlanningHeroCard(
                         trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     )
                 }
-            }
-
-            GenerateSuggestionsButton(
-                enabled = state.canGenerate,
-                isGenerating = state.isGenerating,
-                onClick = { onIntent(MealPlanIntent.GenerateSuggestions) },
-                modifier = Modifier.padding(top = FridgeSpacing.lg),
-            )
-        }
-    }
-}
-
-@Composable
-private fun GenerateSuggestionsButton(
-    enabled: Boolean,
-    isGenerating: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = FridgePillShape
-    val background = if (enabled) {
-        Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
-    } else {
-        SolidColor(MaterialTheme.colorScheme.surfaceContainerHighest)
-    }
-    val contentColor = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .shadow(
-                elevation = if (enabled) 8.dp else 0.dp,
-                shape = shape,
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-            )
-            .clip(shape)
-            .background(background)
-            .clickable(enabled = enabled && !isGenerating, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isGenerating) {
-            CircularProgressIndicator(modifier = Modifier.size(22.dp), color = contentColor, strokeWidth = 2.5.dp)
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = contentColor)
-                Text(
-                    "Vorschläge generieren",
-                    color = contentColor,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = FridgeSpacing.sm),
-                )
             }
         }
     }

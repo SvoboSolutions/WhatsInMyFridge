@@ -1,7 +1,6 @@
 package com.example.whatsinmyfridge.di
 
 import com.example.whatsinmyfridge.domain.usecase.AddPantryIngredientUseCase
-import com.example.whatsinmyfridge.domain.usecase.GenerateMealPlanSuggestionsUseCase
 import com.example.whatsinmyfridge.domain.usecase.GenerateShoppingListUseCase
 import com.example.whatsinmyfridge.domain.usecase.GetRecipeDetailsUseCase
 import com.example.whatsinmyfridge.domain.usecase.MarkRecipeAsCookedUseCase
@@ -22,10 +21,11 @@ import com.example.whatsinmyfridge.domain.usecase.SaveUserProfileUseCase
 import com.example.whatsinmyfridge.domain.usecase.SearchRecipesByIngredientsUseCase
 import com.example.whatsinmyfridge.domain.usecase.SetMealPlanEntryUseCase
 import com.example.whatsinmyfridge.domain.usecase.SignOutUseCase
+import com.example.whatsinmyfridge.domain.usecase.SuggestRecipesForDayUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
-    factory { SearchRecipesByIngredientsUseCase(get(), get()) }
+    factory { SearchRecipesByIngredientsUseCase(get(), get(), get()) }
     factory { GetRecipeDetailsUseCase(get()) }
     factory { ObservePantryUseCase(get()) }
     factory { AddPantryIngredientUseCase(get()) }
@@ -45,6 +45,6 @@ val domainModule = module {
     factory { ObserveMealPlanUseCase(get()) }
     factory { SetMealPlanEntryUseCase(get()) }
     factory { RemoveMealPlanEntryUseCase(get()) }
-    factory { GenerateMealPlanSuggestionsUseCase(get(), get(), get()) }
+    factory { SuggestRecipesForDayUseCase(get(), get(), get(), get()) }
     factory { GenerateShoppingListUseCase(get(), get()) }
 }

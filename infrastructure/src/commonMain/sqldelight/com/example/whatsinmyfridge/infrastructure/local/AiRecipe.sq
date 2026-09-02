@@ -1,0 +1,16 @@
+CREATE TABLE AiRecipeEntity (
+    id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    readyInMinutes INTEGER,
+    servings INTEGER,
+    summary TEXT NOT NULL,
+    ingredientsJson TEXT NOT NULL,
+    instructionsJson TEXT NOT NULL
+);
+
+selectById:
+SELECT * FROM AiRecipeEntity WHERE id = ?;
+
+insertOrReplace:
+INSERT OR REPLACE INTO AiRecipeEntity(id, title, readyInMinutes, servings, summary, ingredientsJson, instructionsJson)
+VALUES (?, ?, ?, ?, ?, ?, ?);

@@ -4,12 +4,13 @@ CREATE TABLE UserProfileEntity (
     dietType TEXT NOT NULL,
     allergies TEXT NOT NULL,
     onboardingCompleted INTEGER NOT NULL,
-    themeMode TEXT NOT NULL DEFAULT 'SYSTEM'
+    themeMode TEXT NOT NULL DEFAULT 'SYSTEM',
+    recipeSource TEXT NOT NULL DEFAULT 'DATABASE'
 );
 
 selectFirst:
 SELECT * FROM UserProfileEntity LIMIT 1;
 
 insertOrReplace:
-INSERT OR REPLACE INTO UserProfileEntity(uid, displayName, dietType, allergies, onboardingCompleted, themeMode)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO UserProfileEntity(uid, displayName, dietType, allergies, onboardingCompleted, themeMode, recipeSource)
+VALUES (?, ?, ?, ?, ?, ?, ?);

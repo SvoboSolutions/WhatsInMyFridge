@@ -6,6 +6,7 @@ import com.example.whatsinmyfridge.domain.model.Ingredient
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.model.RecipeDetails
 import com.example.whatsinmyfridge.domain.model.UserProfile
+import com.example.whatsinmyfridge.domain.repository.AiRecipeRepository
 import com.example.whatsinmyfridge.domain.repository.RecipeRepository
 import com.example.whatsinmyfridge.domain.repository.UserProfileRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SearchRecipesByIngredientsUseCaseTest {
+
+    private val fakeAiRecipeRepository = object : AiRecipeRepository {
+        override suspend fun suggestRecipe(
+            ingredients: List<Ingredient>,
+            dietType: DietType,
+            allergies: Set<Allergy>,
+            allowExtraIngredients: Boolean,
+            excludeTitles: List<String>,
+        ): Result<Recipe> = error("not used in this test")
+
+        override suspend fun getCachedDetails(recipeId: Long): RecipeDetails? = error("not used in this test")
+    }
 
     private val fakeRepository = object : RecipeRepository {
         override suspend fun findRecipesByIngredients(
@@ -37,7 +50,7 @@ class SearchRecipesByIngredientsUseCaseTest {
         override suspend fun saveProfile(profile: UserProfile) = Unit
     }
 
-    private val useCase = SearchRecipesByIngredientsUseCase(fakeRepository, fakeProfileRepository())
+    private val useCase = SearchRecipesByIngredientsUseCase(fakeRepository, fakeAiRecipeRepository, fakeProfileRepository())
 
     @Test
     fun `returns empty list without calling repository when no ingredients given`() = runTest {
@@ -54,7 +67,7 @@ class SearchRecipesByIngredientsUseCaseTest {
                 error("should not be called")
         }
 
-        val result = SearchRecipesByIngredientsUseCase(emptyRepository, fakeProfileRepository())(emptyList())
+        val result = SearchRecipesByIngredientsUseCase(emptyRepository, fakeAiRecipeRepository, fakeProfileRepository())(emptyList())
 
         assertTrue(result.isSuccess)
         assertEquals(emptyList(), result.getOrNull())
@@ -95,7 +108,7 @@ class SearchRecipesByIngredientsUseCaseTest {
             allergies = setOf(Allergy.GLUTEN),
         )
 
-        SearchRecipesByIngredientsUseCase(trackingRepository, fakeProfileRepository(profile))(listOf(Ingredient("Tomate")))
+        SearchRecipesByIngredientsUseCase(trackingRepository, fakeAiRecipeRepository, fakeProfileRepository(profile))(listOf(Ingredient("Tomate")))
 
         assertEquals(DietType.VEGAN, capturedDiet)
         assertEquals(setOf(Allergy.GLUTEN), capturedAllergies)

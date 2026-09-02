@@ -8,6 +8,7 @@ import com.example.whatsinmyfridge.domain.model.NutritionInfo
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.model.RecipeDetails
 import com.example.whatsinmyfridge.domain.model.RecipeIngredient
+import com.example.whatsinmyfridge.domain.repository.AiRecipeRepository
 import com.example.whatsinmyfridge.domain.repository.RecipeRepository
 import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularNutritionDto
 import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularRecipeDetailsDto
@@ -15,6 +16,7 @@ import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularRecipeDt
 
 class RecipeRepositoryImpl(
     private val api: SpoonacularApi,
+    private val aiRecipeRepository: AiRecipeRepository,
 ) : RecipeRepository {
 
     override suspend fun findRecipesByIngredients(
@@ -51,9 +53,18 @@ class RecipeRepositoryImpl(
         }.take(limit)
     }.onFailure { Logger.e("RecipeRepository", "findRecipesByIngredients failed", it) }
 
-    override suspend fun getRecipeDetails(recipeId: Long): Result<RecipeDetails> = runCatching {
-        api.getRecipeInformation(recipeId).toDomain()
-    }.onFailure { Logger.e("RecipeRepository", "getRecipeDetails failed", it) }
+    override suspend fun getRecipeDetails(recipeId: Long): Result<RecipeDetails> {
+        // KI-Rezepte haben keine Spoonacular-ID - sie bekommen bewusst eine negative
+        // synthetische ID (siehe AiRecipeRepositoryImpl) und werden aus dem lokalen Cache
+        // statt von Spoonacular geladen.
+        if (recipeId < 0) {
+            return aiRecipeRepository.getCachedDetails(recipeId)
+                ?.let { Result.success(it) }
+                ?: Result.failure(IllegalStateException("KI-Rezept nicht mehr verfügbar"))
+        }
+        return runCatching { api.getRecipeInformation(recipeId).toDomain() }
+            .onFailure { Logger.e("RecipeRepository", "getRecipeDetails failed", it) }
+    }
 }
 
 private fun SpoonacularRecipeDto.toDomain(): Recipe = Recipe(
