@@ -15,6 +15,7 @@ fun ThemeMode.label(): String = when (this) {
     ThemeMode.SYSTEM -> "System"
     ThemeMode.LIGHT -> "Hell"
     ThemeMode.DARK -> "Dunkel"
+    ThemeMode.PLAYFUL -> "Verspielt"
 }
 
 fun Allergy.label(): String = when (this) {

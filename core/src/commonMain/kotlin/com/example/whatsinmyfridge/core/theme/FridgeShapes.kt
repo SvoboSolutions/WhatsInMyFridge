@@ -12,5 +12,14 @@ internal val FridgeShapes = Shapes(
     extraLarge = RoundedCornerShape(36.dp),
 )
 
+/** Noch runder und bauchiger als das Standard-Set - für den Playful-Modus. */
+internal val FridgePlayfulShapes = Shapes(
+    extraSmall = RoundedCornerShape(14.dp),
+    small = RoundedCornerShape(20.dp),
+    medium = RoundedCornerShape(28.dp),
+    large = RoundedCornerShape(36.dp),
+    extraLarge = RoundedCornerShape(44.dp),
+)
+
 /** Vollständig abgerundete "Pille" für Buttons und Chips - der verspielte Signature-Look. */
 val FridgePillShape = RoundedCornerShape(50)
