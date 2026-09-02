@@ -31,6 +31,7 @@ class SpoonacularApi(
     suspend fun getRecipeInformation(recipeId: Long): SpoonacularRecipeDetailsDto =
         httpClient.get("$SPOONACULAR_BASE_URL/recipes/$recipeId/information") {
             parameter("apiKey", apiKey)
+            parameter("includeNutrition", true)
         }.body()
 
     /** Ein Call für mehrere Rezepte - für Diät-/Allergie-Nachfilterung ohne N+1-Requests. */

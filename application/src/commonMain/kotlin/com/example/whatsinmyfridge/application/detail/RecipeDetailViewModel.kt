@@ -6,6 +6,7 @@ import com.example.whatsinmyfridge.core.logging.Logger
 import com.example.whatsinmyfridge.domain.model.Ingredient
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.model.RecipeDetails
+import com.example.whatsinmyfridge.domain.model.RecipeIngredient
 import com.example.whatsinmyfridge.domain.usecase.GetRecipeDetailsUseCase
 import com.example.whatsinmyfridge.domain.usecase.MarkRecipeAsCookedUseCase
 import com.example.whatsinmyfridge.domain.usecase.ObserveSavedRecipeIdsUseCase
@@ -24,6 +25,7 @@ data class RecipeDetailState(
     val details: RecipeDetails? = null,
     val haveIngredients: List<String> = emptyList(),
     val needIngredients: List<String> = emptyList(),
+    val displayServings: Int = 1,
     val isSaved: Boolean = false,
     val justCookedPoints: Int? = null,
     val errorMessage: String? = null,
@@ -33,6 +35,7 @@ sealed interface RecipeDetailIntent {
     data object ToggleSave : RecipeDetailIntent
     data object MarkAsCooked : RecipeDetailIntent
     data object DismissCookedFeedback : RecipeDetailIntent
+    data class SetServings(val servings: Int) : RecipeDetailIntent
 }
 
 class RecipeDetailViewModel(
@@ -60,7 +63,13 @@ class RecipeDetailViewModel(
                 .onSuccess { details ->
                     val (need, have) = classifyIngredients(details.ingredients, missedIngredientNames)
                     _state.update {
-                        it.copy(isLoading = false, details = details, haveIngredients = have, needIngredients = need)
+                        it.copy(
+                            isLoading = false,
+                            details = details,
+                            haveIngredients = have,
+                            needIngredients = need,
+                            displayServings = details.servings ?: 1,
+                        )
                     }
                 }
                 .onFailure { error ->
@@ -77,6 +86,8 @@ class RecipeDetailViewModel(
             RecipeDetailIntent.ToggleSave -> toggleSave()
             RecipeDetailIntent.MarkAsCooked -> markAsCooked()
             RecipeDetailIntent.DismissCookedFeedback -> _state.update { it.copy(justCookedPoints = null) }
+            is RecipeDetailIntent.SetServings ->
+                _state.update { it.copy(displayServings = intent.servings.coerceAtLeast(1)) }
         }
     }
 
@@ -120,9 +131,10 @@ class RecipeDetailViewModel(
  * Missing-Liste auf und würden sonst fälschlich als fehlend markiert).
  */
 private fun classifyIngredients(
-    fullIngredientLines: List<String>,
+    ingredients: List<RecipeIngredient>,
     missedIngredientNames: List<String>,
 ): Pair<List<String>, List<String>> {
+    val fullIngredientLines = ingredients.map { it.original }
     val needKeywords = missedIngredientNames.map { it.lowercase() }.filter { it.isNotBlank() }
     if (needKeywords.isEmpty()) return emptyList<String>() to fullIngredientLines
 

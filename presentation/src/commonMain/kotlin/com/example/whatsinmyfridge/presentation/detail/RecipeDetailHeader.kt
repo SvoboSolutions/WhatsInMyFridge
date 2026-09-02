@@ -43,7 +43,7 @@ fun RecipeDetailHeader(details: RecipeDetails) {
         horizontalArrangement = Arrangement.spacedBy(FridgeSpacing.sm),
     ) {
         details.readyInMinutes?.let { InfoChip(Icons.Filled.Schedule, "$it Min.") }
-        details.servings?.let { InfoChip(Icons.Filled.Groups, "$it Portionen") }
+        details.servings?.let { InfoChip(Icons.Filled.Groups, "Für $it Portionen") }
     }
 }
 

@@ -4,9 +4,12 @@ import com.example.whatsinmyfridge.core.logging.Logger
 import com.example.whatsinmyfridge.domain.model.Allergy
 import com.example.whatsinmyfridge.domain.model.DietType
 import com.example.whatsinmyfridge.domain.model.Ingredient
+import com.example.whatsinmyfridge.domain.model.NutritionInfo
 import com.example.whatsinmyfridge.domain.model.Recipe
 import com.example.whatsinmyfridge.domain.model.RecipeDetails
+import com.example.whatsinmyfridge.domain.model.RecipeIngredient
 import com.example.whatsinmyfridge.domain.repository.RecipeRepository
+import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularNutritionDto
 import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularRecipeDetailsDto
 import com.example.whatsinmyfridge.infrastructure.remote.dto.SpoonacularRecipeDto
 
@@ -70,6 +73,16 @@ private fun SpoonacularRecipeDetailsDto.toDomain(): RecipeDetails = RecipeDetail
     readyInMinutes = readyInMinutes,
     servings = servings,
     summary = summary.replace(htmlTagRegex, "").trim(),
-    ingredients = extendedIngredients.map { it.original },
+    ingredients = extendedIngredients.map {
+        RecipeIngredient(name = it.name, amount = it.amount, unit = it.unit, original = it.original)
+    },
     instructions = analyzedInstructions.flatMap { group -> group.steps.map { it.step } },
+    nutrition = nutrition?.toDomain(),
+)
+
+private fun SpoonacularNutritionDto.toDomain(): NutritionInfo = NutritionInfo(
+    calories = nutrients.find { it.name == "Calories" }?.amount?.toInt(),
+    proteinG = nutrients.find { it.name == "Protein" }?.amount,
+    fatG = nutrients.find { it.name == "Fat" }?.amount,
+    carbsG = nutrients.find { it.name == "Carbohydrates" }?.amount,
 )

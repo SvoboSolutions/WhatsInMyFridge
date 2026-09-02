@@ -74,10 +74,10 @@ class GenerateShoppingListUseCase(
 
         entries.sortedBy { it.date }.mapNotNull { entry ->
             val details = recipeRepository.getRecipeDetails(entry.recipeId).getOrNull() ?: return@mapNotNull null
-            val missing = details.ingredients.filter { ingredientText ->
-                val normalized = ingredientText.lowercase()
+            val missing = details.ingredients.filter { ingredient ->
+                val normalized = ingredient.original.lowercase()
                 pantryNames.none { pantryName -> normalized.contains(pantryName) }
-            }
+            }.map { it.original }
             if (missing.isEmpty()) null else ShoppingListEntry(entry.date, entry.recipeTitle, missing)
         }
     }

@@ -5,7 +5,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -13,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,13 +29,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.whatsinmyfridge.application.detail.RecipeDetailIntent
 import com.example.whatsinmyfridge.application.detail.RecipeDetailState
+import com.example.whatsinmyfridge.core.theme.FridgePillShape
 import com.example.whatsinmyfridge.core.theme.FridgeSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +50,7 @@ fun RecipeDetailScreen(
     onBack: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var isCookModeOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.justCookedPoints) {
         state.justCookedPoints?.let { points ->
@@ -72,8 +82,22 @@ fun RecipeDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            if (state.details != null) {
-                CookedButton(onClick = { onIntent(RecipeDetailIntent.MarkAsCooked) })
+            val details = state.details
+            if (details != null) {
+                Column {
+                    if (details.instructions.isNotEmpty()) {
+                        Button(
+                            onClick = { isCookModeOpen = true },
+                            shape = FridgePillShape,
+                            modifier = Modifier.padding(horizontal = FridgeSpacing.md, vertical = FridgeSpacing.sm)
+                                .fillMaxWidth().height(52.dp),
+                        ) {
+                            Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                            Text("Jetzt kochen", modifier = Modifier.padding(start = FridgeSpacing.sm))
+                        }
+                    }
+                    CookedButton(onClick = { onIntent(RecipeDetailIntent.MarkAsCooked) })
+                }
             }
         },
     ) { padding ->
@@ -105,6 +129,22 @@ fun RecipeDetailScreen(
 
                         item { IngredientChecklist(state.haveIngredients, state.needIngredients) }
 
+                        details.nutrition?.let { nutrition ->
+                            item { NutritionRow(nutrition, modifier = Modifier.padding(top = FridgeSpacing.sm)) }
+                        }
+
+                        if (details.ingredients.isNotEmpty()) {
+                            item {
+                                ServingsIngredientSection(
+                                    ingredients = details.ingredients,
+                                    baseServings = details.servings ?: 1,
+                                    displayServings = state.displayServings,
+                                    onServingsChange = { onIntent(RecipeDetailIntent.SetServings(it)) },
+                                    modifier = Modifier.padding(top = FridgeSpacing.md),
+                                )
+                            }
+                        }
+
                         if (details.summary.isNotBlank()) {
                             item {
                                 Text(
@@ -131,6 +171,19 @@ fun RecipeDetailScreen(
                 }
             }
         }
+    }
+
+    val cookModeDetails = state.details
+    if (isCookModeOpen && cookModeDetails != null) {
+        CookModeOverlay(
+            recipeTitle = cookModeDetails.title,
+            steps = cookModeDetails.instructions,
+            onFinish = {
+                isCookModeOpen = false
+                onIntent(RecipeDetailIntent.MarkAsCooked)
+            },
+            onClose = { isCookModeOpen = false },
+        )
     }
 }
 
