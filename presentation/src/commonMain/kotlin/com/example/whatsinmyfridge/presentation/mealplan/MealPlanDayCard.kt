@@ -1,6 +1,7 @@
 package com.example.whatsinmyfridge.presentation.mealplan
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,17 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
@@ -29,6 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,13 +42,15 @@ import com.example.whatsinmyfridge.domain.model.MealPlanEntry
 import kotlinx.datetime.LocalDate
 
 private val DayBadgeSize = 56.dp
-private val RowHeight = 84.dp
-private val ImageSize = 64.dp
+private val RowHeight = 88.dp
+private val ImageSize = 68.dp
+private val ActionButtonSize = 40.dp
 
 /**
  * Ein Tag im Essenplan: entweder mit zugewiesenem Rezept (Bild, Titel, Tausch-/Entfernen-
- * Aktionen) oder als einladende "Rezept wählen"-Karte mit dezenter Outline-Kontur. Der
- * heutige Tag bekommt eine farbige Tages-Badge statt neutralem Grau, damit er sofort auffällt.
+ * Aktionen in schwebenden Tonal-Kreisen) oder als einladende "Rezept wählen"-Karte mit
+ * dezenter Outline-Kontur. Der heutige Tag bekommt eine farbige, leicht schwebende
+ * Tages-Badge statt neutralem Grau, damit er sofort auffällt.
  */
 @Composable
 fun MealPlanDayCard(
@@ -57,11 +62,21 @@ fun MealPlanDayCard(
     onOpenDetails: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val shape = MaterialTheme.shapes.large
+
     if (entry != null) {
-        ElevatedCard(
-            shape = MaterialTheme.shapes.large,
-            modifier = modifier.fillMaxWidth(),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        Card(
+            shape = shape,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            modifier = modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 5.dp,
+                    shape = shape,
+                    ambientColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f),
+                    spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
+                ),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().height(RowHeight).padding(FridgeSpacing.smMd),
@@ -78,12 +93,15 @@ fun MealPlanDayCard(
                             model = entry.recipeImageUrl,
                             contentDescription = entry.recipeTitle,
                             contentScale = ContentScale.Crop,
-                            modifier = Modifier.size(ImageSize).clip(RoundedCornerShape(16.dp)),
+                            modifier = Modifier
+                                .size(ImageSize)
+                                .shadow(elevation = 3.dp, shape = MaterialTheme.shapes.medium)
+                                .clip(MaterialTheme.shapes.medium),
                         )
                     } else {
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest,
                             modifier = Modifier.size(ImageSize),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -102,21 +120,27 @@ fun MealPlanDayCard(
                     )
                 }
 
-                IconButton(
+                DayCardActionButton(
+                    icon = Icons.Filled.SwapHoriz,
+                    contentDescription = "Rezept ändern",
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     onClick = onPickRecipe,
-                    colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                ) {
-                    Icon(Icons.Filled.SwapHoriz, contentDescription = "Rezept ändern")
-                }
-                IconButton(onClick = onRemoveEntry) {
-                    Icon(Icons.Filled.Close, contentDescription = "Entfernen", tint = MaterialTheme.colorScheme.outline)
-                }
+                )
+                DayCardActionButton(
+                    icon = Icons.Filled.Close,
+                    contentDescription = "Entfernen",
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = onRemoveEntry,
+                    modifier = Modifier.padding(start = FridgeSpacing.xs),
+                )
             }
         }
     } else {
         OutlinedCard(
             onClick = onPickRecipe,
-            shape = MaterialTheme.shapes.large,
+            shape = shape,
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
             colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = modifier.fillMaxWidth(),
@@ -134,10 +158,19 @@ fun MealPlanDayCard(
                     modifier = Modifier.weight(1f).padding(horizontal = FridgeSpacing.sm),
                 )
 
-                Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.primaryContainer) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.shadow(
+                        elevation = 3.dp,
+                        shape = MaterialTheme.shapes.medium,
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    ),
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = FridgeSpacing.sm, vertical = FridgeSpacing.xs),
+                        modifier = Modifier.padding(horizontal = FridgeSpacing.smMd, vertical = FridgeSpacing.sm),
                     ) {
                         Icon(
                             Icons.Filled.Add,
@@ -148,6 +181,7 @@ fun MealPlanDayCard(
                         Text(
                             "Wählen",
                             style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(start = FridgeSpacing.xs),
                         )
@@ -159,11 +193,34 @@ fun MealPlanDayCard(
 }
 
 @Composable
+private fun DayCardActionButton(
+    icon: ImageVector,
+    contentDescription: String,
+    containerColor: Color,
+    contentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(ActionButtonSize)
+            .shadow(elevation = 2.dp, shape = CircleShape)
+            .clip(CircleShape)
+            .background(containerColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = contentDescription, tint = contentColor, modifier = Modifier.size(20.dp))
+    }
+}
+
+@Composable
 private fun DayBadge(date: LocalDate, isToday: Boolean, filled: Boolean, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(16.dp)
     val containerColor = when {
         isToday -> MaterialTheme.colorScheme.primary
         filled -> MaterialTheme.colorScheme.secondaryContainer
-        else -> MaterialTheme.colorScheme.surfaceVariant
+        else -> MaterialTheme.colorScheme.surfaceContainerHighest
     }
     val contentColor = when {
         isToday -> MaterialTheme.colorScheme.onPrimary
@@ -172,9 +229,20 @@ private fun DayBadge(date: LocalDate, isToday: Boolean, filled: Boolean, modifie
     }
 
     Surface(
-        shape = RoundedCornerShape(14.dp),
+        shape = shape,
         color = containerColor,
-        modifier = modifier.size(DayBadgeSize),
+        modifier = modifier.size(DayBadgeSize).let {
+            if (isToday) {
+                it.shadow(
+                    elevation = 6.dp,
+                    shape = shape,
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                )
+            } else {
+                it
+            }
+        },
     ) {
         Box(contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
